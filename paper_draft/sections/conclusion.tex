@@ -1,0 +1,11 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We measured the effective rank of humor recognition in LLM representations using rank-constrained linear probes, mean difference directions, and \lora fine-tuning across \gpttwo and \pythia. Our results reveal that the answer depends critically on what ``humor recognition'' means.
+
+Distinguishing joke-style text from non-joke text is \textbf{rank-1}: a single linear direction achieves 99.8\% accuracy, and \lora at rank 0 achieves 98.3\%. However, this direction captures text register, not humor understanding. When stylistic confounds are controlled---contrasting jokes with failed attempts at humor---linear probes achieve only ${\sim}$60\% accuracy regardless of rank, showing that humor quality is nearly linearly undetectable in frozen model representations.
+
+These findings have three implications. For \textbf{interpretability}, they caution that high-accuracy linear probes may reflect stylistic confounds rather than genuine concept encoding; controlled experiments are essential for validating linear representation claims. For \textbf{applications}, they show that \lora at rank 1 suffices for joke-style detection, but building a humor quality classifier requires more expressive methods. For \textbf{humor research}, they suggest that LLM humor benchmarks may substantially overestimate genuine humor understanding due to uncontrolled stylistic differences between humor and non-humor text.
+
+\para{Future work.}
+Promising directions include testing with larger models (7B+) to determine whether humor quality becomes linearly separable at scale, using non-linear probes to search for low-dimensional but curved humor manifolds, and applying sparse autoencoders \citep{elhage2022toy} to identify humor-related features in a more fine-grained manner. The Unfun.me paired dataset \citep{peyrard2021laughing, horvitz2024getting}---which provides minimal pairs of funny and unfunny headlines---offers an ideal test bed for eliminating stylistic confounds entirely.

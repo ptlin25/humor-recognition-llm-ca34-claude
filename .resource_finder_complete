@@ -1,0 +1,28 @@
+Resource finding phase completed successfully.
+
+Topic: How Low Rank is Humor Recognition in LLMs?
+Completion time: 2026-02-09
+
+Resources gathered:
+- Papers: 32 (13 humor recognition, 16 low-rank/probing/interpretability, 3 LoRA variants)
+- Datasets: 3 (Short Jokes 231K, Reddit Jokes 1M, Offensive Humor 103K)
+- Code repositories: 3 (laughing-head, eliciting-latent-sentiment, pyreft)
+
+Documentation:
+- literature_review.md: Comprehensive synthesis of 18 key papers with methodology recommendations
+- resources.md: Complete catalog of all resources with experiment design recommendations
+- papers/README.md: Paper index with annotations
+- datasets/README.md: Dataset descriptions with download instructions
+- code/README.md: Repository descriptions with adaptation strategy
+
+Key findings from literature review:
+1. Humor recognition in BERT concentrates in a single attention head (Laughing Heads, 2021)
+2. Sentiment is linearly represented along a single direction in LLMs (Tigges et al., 2023)
+3. NLP tasks have very low intrinsic dimension (d90~200 for RoBERTa on MRPC; Aghajanyan et al., 2020)
+4. No existing work directly measures the rank of humor recognition in LLMs — this is the central gap
+
+Recommended next steps:
+1. Adapt eliciting-latent-sentiment code to find humor directions in GPT-2/Pythia
+2. Measure intrinsic dimensionality of humor via LoRA and LoReFT rank sweeps
+3. Compare humor's representational complexity to sentiment as baseline
+4. Validate findings with causal interventions (activation patching, directional ablation)

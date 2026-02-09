@@ -1,0 +1,20 @@
+\section{Introduction}
+\label{sec:introduction}
+
+A growing body of work in mechanistic interpretability has revealed that large language models encode binary concepts---sentiment \citep{tigges2023linear}, truth \citep{marks2023geometry}, and safety-relevant properties \citep{zou2023representation}---as linear directions in their activation space. These findings support the \emph{linear representation hypothesis}: high-level concepts are represented as directions in the residual stream, recoverable by a single vector projection. A natural question is whether this linearity extends to more complex, subjective phenomena.
+
+We examine humor. Humor is a compelling test case because it involves incongruity, surprise, and social context---properties that are arguably richer than positive-vs-negative sentiment. Prior work has shown that a single attention head in BERT specializes in humor detection \citep{peyrard2021laughing} and that transformer-based classifiers achieve near-perfect accuracy on humor benchmarks \citep{weller2019humor}. Yet no study has directly measured the \emph{dimensionality} of humor recognition in LLM representations.
+
+Our main question is: {\bf how low-rank is humor recognition in LLMs?} Can humor be captured by a single direction (like sentiment), or does it require a higher-dimensional subspace?
+
+We address this question through three complementary methods applied to \gpttwo (124M) and \pythia (410M): (1) linear probes at PCA-constrained ranks from 1 to full dimensionality, (2) mean difference probes that project onto the rank-1 direction between class centroids, and (3) \lora fine-tuning at adapter ranks from 0 to 32. Critically, we evaluate these methods under two conditions: an \emph{easy} setting that contrasts jokes with stylistically dissimilar factual text, and a \emph{hard} setting that contrasts jokes with failed attempts at humor drawn from the same distribution.
+
+Our results reveal a sharp dissociation. In the easy setting, humor is rank-1: a single direction achieves 99.8\% accuracy in \gpttwo layer 8, and \lora at rank 0 achieves 98.3\%. In the hard setting, accuracy drops to ${\sim}$60\% regardless of rank---barely above chance for binary classification. This gap shows that the ``humor direction'' discovered in the easy setting primarily captures text register (informal/conversational vs.\ formal/factual) rather than humor understanding. We compare against sentiment (\ssttwo), which achieves 76.7\% accuracy under controlled conditions, confirming that humor quality is harder to linearly extract than even sentiment.
+
+We make the following contributions:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+\item We provide the first systematic measurement of the effective rank of humor recognition in LLM representations, using three complementary methods across two models.
+\item We demonstrate that humor-style detection is rank-1 but that this result is driven by stylistic confounds, not humor comprehension.
+\item We show that humor quality discrimination (funny vs.\ unfunny jokes) is nearly linearly undetectable in frozen \gpttwo activations, achieving only ${\sim}$60\% accuracy at any rank.
+\item We establish that \lora at rank 0--1 suffices for humor-style classification but that this reflects surface features rather than genuine humor understanding.
+\end{itemize}

@@ -1,0 +1,46 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The Humor Direction is a Style Direction}
+\label{sec:style_direction}
+
+Our central finding is that the rank-1 ``humor direction'' in \gpttwo and \pythia primarily captures text register---the difference between informal, conversational joke-style text and formal, factual text---rather than humor understanding. Three pieces of evidence support this interpretation.
+
+First, the 99.8\% rank-1 accuracy on the easy task is \emph{suspiciously high}. Even sentiment, a simpler binary concept with well-established linear structure \citep{tigges2023linear}, does not achieve this level of performance from frozen representations under our probing protocol (76.7\% at best). The near-perfect accuracy suggests the probe exploits a surface-level signal rather than a semantic one.
+
+Second, accuracy drops to near-chance (${\sim}$60\%) when both classes share the same text register. In Hard-1 (jokes vs.\ unfunny Reddit jokes) and Hard-2 (popular vs.\ unpopular Reddit jokes), the stylistic confound is removed, and the probe fails. If the ``humor direction'' captured genuine humor recognition, it should maintain discriminative power when applied to texts that differ in humor quality but not in style.
+
+Third, \lora at rank 0---training only a 1,536-parameter classification head on frozen activations---achieves 98.3\% on the easy task. This confirms that the relevant information is already present in the frozen representations and does not require learning new features. The information is so accessible that a linear layer suffices, consistent with a text-register signal that is strongly represented in the base model.
+
+\subsection{Implications for the Linear Representation Hypothesis}
+\label{sec:linear_rep}
+
+Our results add nuance to the linear representation hypothesis. The hypothesis holds for \emph{stylistic} properties: text register is linearly and low-rank represented. However, it does not straightforwardly extend to \emph{humor quality}, a more complex semantic property. This aligns with \citet{engels2024not}, who showed that not all features in LLMs are linear. Humor quality may require non-linear representations, multi-dimensional manifolds, or features that are not well-captured by single-token activations.
+
+The distinction between ``linearly detectable'' and ``genuinely understood'' is critical for interpretability research. A high-accuracy linear probe does not guarantee that the model encodes the target concept; it may instead reflect a confound that correlates with the concept in the training data \citep{hewitt2019designing}. Our controlled experiments provide a template for testing this distinction: measure probing accuracy both with and without stylistic confounds.
+
+\subsection{Implications for Practical Applications}
+\label{sec:practical}
+
+For practitioners building humor classifiers, our results have a clear message: \lora at rank 1 is sufficient to distinguish jokes from non-jokes (99.5\% accuracy), but this classifier detects joke \emph{style}, not joke \emph{quality}. Building a system that distinguishes genuinely funny from unfunny text likely requires either (1) larger models with richer representations, (2) non-linear probes or classifiers, or (3) fine-tuning that creates new humor-relevant features rather than exploiting existing ones.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\para{Non-humor text quality.}
+Our factual sentences are hand-crafted and maximally dissimilar from jokes. A more naturalistic non-humor set (e.g., casual non-joke conversation) might yield intermediate results between the easy and hard conditions.
+
+\para{Reddit score as humor proxy.}
+Reddit upvotes reflect many factors beyond humor quality---timing, subreddit norms, controversy, and audience demographics. Low-scoring jokes may not be unfunny; they may simply be unseen. A cleaner humor-quality signal might come from controlled human ratings, such as the Unfun.me dataset \citep{horvitz2024getting, peyrard2021laughing}.
+
+\para{Model scale.}
+\gpttwo (124M) and \pythia (410M) are relatively small by modern standards. Larger models (7B+) may develop richer humor representations that are more linearly accessible. Our negative result for humor quality should be interpreted as applying to these specific model sizes.
+
+\para{Activation position.}
+We extract activations at the last token position only. Humor information may be distributed across multiple positions, particularly in setup-punchline structures where the humor resides in the relationship between distant tokens.
+
+\para{Binary framing.}
+We test binary humor detection (funny vs.\ not funny). Humor is graded and multi-dimensional---puns, absurdity, irony, and dark humor may occupy distinct subspaces. A finer-grained analysis might reveal low-rank structure within humor subtypes even if the overall humor space is high-rank.
+
+\para{Language and culture.}
+All datasets are English-language. Humor is highly culture- and language-dependent, and our findings may not generalize to other linguistic contexts.

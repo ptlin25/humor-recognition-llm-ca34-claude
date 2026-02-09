@@ -1,0 +1,958 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at templates/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. USE COMMAND TEMPLATES: Copy templates/paper_writing/commands/ to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# How Low Rank is Humor Recognition in LLMs?
+
+## 1. Executive Summary
+
+We investigate the dimensionality of humor recognition in the hidden representations of large language models. Using GPT-2 (124M) and Pythia-410M, we extract activations for humorous and non-humorous text and measure the effective rank of humor-discriminating subspaces through PCA analysis, linear probing at varying dimensions, and LoRA fine-tuning at varying ranks.
+
+**Key finding**: When jokes are contrasted with stylistically dissimilar text (factual sentences), humor is essentially **rank-1**---a single linear direction achieves 99.8% classification accuracy. However, when confounds are controlled (jokes vs. failed attempts at humor), humor recognition becomes nearly undetectable linearly, with best probes achieving only ~60% accuracy regardless of rank. This reveals that what LLMs linearly separate as &#34;humor&#34; is primarily **text style and register**, not humor understanding per se.
+
+**Practical implication**: LoRA fine-tuning at rank 0-1 is sufficient to teach GPT-2 to distinguish jokes from non-jokes (98.3-99.5% accuracy), but this likely reflects surface-level stylistic features rather than genuine humor comprehension. True humor quality discrimination (funny vs. unfunny jokes) appears to require higher-rank or non-linear representations that are not easily extractable from frozen GPT-2 activations.
+
+## 2. Goal
+
+**Hypothesis**: There exists a low-dimensional basis in the hidden representations of LLMs for humor recognition, analogous to the linear sentiment direction found by Tigges et al. (2023).
+
+**Research Question**: How low-rank is humor recognition in LLMs? Can humor be captured by a single direction (like sentiment), or does it require a higher-dimensional subspace?
+
+**Why This Matters**:
+1. Linear representations of concepts (sentiment, truth, safety) are a cornerstone of mechanistic interpretability. Extending this to humor tests whether complex, subjective phenomena share this property.
+2. If humor is low-rank, it can be efficiently fine-tuned (LoRA at minimal rank) and steered (representation engineering).
+3. Understanding the dimensionality of humor informs whether humor is a &#34;simple&#34; or &#34;complex&#34; concept in the model&#39;s latent space.
+
+## 3. Data Construction
+
+### Dataset Description
+
+We use five experimental conditions with three datasets:
+
+| Condition | Positive Class | Negative Class | Source | N per class |
+|-----------|---------------|---------------|--------|-------------|
+| Easy | Short Jokes (Kaggle) | Factual sentences (hand-crafted) | HuggingFace + manual | 1,200 train / 400 test |
+| Hard-1 | Short Jokes (Kaggle) | Low-score Reddit jokes (score ≤ 2) | HuggingFace | 1,000 train / 300 test |
+| Hard-2 | High-score Reddit (score ≥ 50) | Low-score Reddit (score ≤ 2) | HuggingFace | 1,000 train / 300 test |
+| Sentiment | SST-2 positive | SST-2 negative | HuggingFace | 1,000 train / 300 test |
+| LoRA | Short Jokes | Factual sentences | Same as Easy | 1,200 train / 400 test |
+
+### Example Samples
+
+**Humor (Short Jokes)**:
+- &#34;If I could have dinner with anyone, dead or alive... I would choose alive.&#34;
+- &#34;Two guys walk into a bar. The third guy ducks.&#34;
+
+**Non-humor (Factual sentences)**:
+- &#34;The speed of light is approximately 299,792 kilometers per second.&#34;
+- &#34;The capital of Australia is Canberra.&#34;
+
+**Low-score Reddit (unfunny attempt at humor)**:
+- &#34;My last joke for now. [removed]&#34; (score: 9)
+- &#34;I am soooo glad I&#39;m not circumcised! My corona is covered with foreskin...&#34; (score: 2)
+
+### Data Quality
+- Short Jokes: filtered to 10-200 characters to avoid trivial length cues
+- Reddit: filtered to remove [removed]/[deleted] posts, 20-200 character range
+- SST-2: standard benchmark, no modifications
+- All datasets balanced 50/50 between classes
+
+### Preprocessing Steps
+1. Filtered by character length (20-200) to reduce length as a confound
+2. Removed Reddit posts with [removed] or [deleted] content
+3. Shuffled with fixed seed (42) for reproducibility
+4. Split 70/30 train/test for hard tasks, 60/20/20 for easy task
+
+## 4. Experiment Description
+
+### Methodology
+
+#### High-Level Approach
+We measure humor recognition rank through three complementary methods:
+1. **Linear probing** at constrained ranks (PCA reduction + logistic regression)
+2. **Mean difference probe** (rank-1 direction between class centroids)
+3. **LoRA fine-tuning** at varying adapter ranks
+
+#### Why This Method?
+We follow the methodology established by Tigges et al. (2023) for linear representations of sentiment, and extend it to humor. The mean difference method was shown to converge with PCA, K-means, logistic regression, and DAS methods (cosine similarity 79-99%). We add LoRA experiments following the logic of Hu et al. (2021) and Aghajanyan et al. (2020) that task-specific weight updates have low intrinsic rank.
+
+### Implementation Details
+
+#### Tools and Libraries
+- PyTorch: 2.10.0+cu128
+- Transformers: 5.1.0
+- TransformerLens: 2.15.4 (not used in final experiments)
+- scikit-learn: 1.8.0
+- NumPy: latest
+- Matplotlib: latest
+
+#### Models
+| Model | Parameters | Layers | Hidden Dim | Purpose |
+|-------|-----------|--------|-----------|---------|
+| GPT-2 small | 124M | 12 | 768 | Primary model |
+| Pythia-410M | 410M | 24 | 1024 | Scale comparison |
+
+#### Hyperparameters
+
+**Linear Probing**:
+| Parameter | Value | Selection Method |
+|-----------|-------|------------------|
+| PCA ranks tested | 1, 2, 4, 8, 16, 32, 64, full | Logarithmic sweep |
+| Max LR iterations | 1000 | Default (sufficient for convergence) |
+| Random seed | 42 | Fixed |
+
+**LoRA Fine-tuning**:
+| Parameter | Value | Selection Method |
+|-----------|-------|------------------|
+| LoRA ranks | 0, 1, 2, 4, 8, 16, 32 | Logarithmic sweep |
+| Learning rate | 2e-4 | Common for LoRA |
+| Epochs | 5 | Standard |
+| Batch size | 32 | GPU memory fit |
+| Target modules | c_attn, c_proj | Standard for GPT-2 |
+
+#### Training Procedure
+1. **Activation extraction**: Forward pass through model, collect hidden states at last non-padding token position, all layers
+2. **PCA + Probe**: StandardScaler normalization → PCA(n_components=k) → LogisticRegression
+3. **Mean diff**: Compute class centroids → unit direction vector → project &amp; threshold at median
+4. **LoRA**: Freeze base model → inject LoRA adapters → train classification head + adapters → evaluate on validation set
+
+### Experimental Protocol
+
+#### Reproducibility Information
+- Random seed: 42 (NumPy, PyTorch, scikit-learn)
+- Hardware: 2x NVIDIA RTX 3090 (24GB each), used single GPU
+- Python: 3.12.8
+- Execution time: ~15 minutes total
+
+### Raw Results
+
+#### Experiment 1: Easy Task (Jokes vs. Factual) - GPT-2
+
+**Rank-1 (Mean Difference) Probe Accuracy by Layer**:
+
+| Layer | Mean Diff Acc | Rank-1 Probe Acc | Best Rank | Best Acc |
+|-------|-------------|-----------------|-----------|----------|
+| 0 | 0.964 | 0.964 | 1 | 0.964 |
+| 1 | 0.974 | 0.980 | 32 | 0.996 |
+| 2 | 0.990 | 0.988 | 32 | 0.996 |
+| 3 | 0.983 | 0.988 | 64 | 0.999 |
+| 4 | 0.985 | 0.989 | 32 | 0.999 |
+| 5 | 0.989 | 0.989 | 16 | 0.999 |
+| 6 | 0.990 | 0.989 | 16 | 0.999 |
+| 7 | 0.995 | 0.996 | 8 | 1.000 |
+| **8** | **0.998** | **0.998** | **8** | **1.000** |
+| 9 | 0.994 | 0.995 | 32 | 1.000 |
+| 10 | 0.994 | 0.995 | 32 | 1.000 |
+| 11 | 0.989 | 0.995 | 32 | 1.000 |
+| 12 | 0.661 | 0.981 | 8 | 0.998 |
+
+**Key observation**: Rank-1 achieves 99.8% accuracy at the best layer (layer 8). Going from rank 1 to higher ranks provides marginal improvement (99.8% → 100%).
+
+**Probe Accuracy at Different Ranks (Layer 8)**:
+
+| Rank | Accuracy |
+|------|----------|
+| 1 | 0.998 |
+| 2 | 0.996 |
+| 4 | 0.996 |
+| 8 | 0.998 |
+| 16 | 0.999 |
+| 32 | 1.000 |
+| 64 | 0.999 |
+| 768 (full) | 0.999 |
+
+#### Experiment 2: LoRA Fine-tuning (GPT-2, Easy Task)
+
+| LoRA Rank | Val Accuracy | Trainable Params |
+|-----------|-------------|-----------------|
+| 0 (head only) | 0.983 | 1,536 |
+| 1 | 0.995 | 102,912 |
+| 2 | 0.995 | 204,288 |
+| 4 | 0.998 | 407,040 |
+| 8 | 0.995 | 812,544 |
+| 16 | 0.990 | 1,623,552 |
+| 32 | 1.000 | 3,245,568 |
+
+**Key observation**: LoRA rank 0 (just classification head, 1,536 params) achieves 98.3%. Rank 1 achieves 99.5%. Performance saturates at rank 1-4.
+
+#### Experiment 3: Hard Tasks (Controlled Confounds)
+
+| Task | Best Rank-1 Acc | Best Rank-1 Layer | Best Probe Acc | Best Probe Layer |
+|------|----------------|-------------------|---------------|-----------------|
+| Jokes vs Low-Score Reddit | 0.597 | 7 | 0.600 | 10 |
+| High vs Low Score Reddit | 0.567 | 9 | 0.610 | 12 |
+| SST-2 Sentiment | 0.640 | 11 | 0.767 | 11 |
+
+**Key observation**: When non-humor examples are stylistically similar to jokes (both are Reddit posts attempting humor), accuracy drops to near-chance for rank-1 probes and ~60% even at full rank. Humor quality is barely linearly separable.
+
+#### Experiment 4: Cross-Model (Pythia-410M, Easy Task)
+
+| Layer | Mean Diff Acc | Best Rank | Best Acc |
+|-------|-------------|-----------|----------|
+| 0 | 0.759 | 2 | 0.759 |
+| 5 | 0.971 | 32 | 0.998 |
+| 10 | 0.994 | 4 | 0.999 |
+| 15 | 0.998 | 8 | 0.999 |
+| **20** | **1.000** | **4** | **1.000** |
+| 24 | 0.990 | 16 | 0.999 |
+
+**Key observation**: Pythia-410M shows identical pattern---rank-1 probe achieves 100% on easy task.
+
+### Visualizations
+
+All visualizations are in `results/plots/`:
+- `figure1_main_results.png`: PCA spectrum, cumulative variance, probing results, LoRA (GPT-2, easy task)
+- `figure2_hard_tasks.png`: Hard task results with controlled confounds
+- `figure3_comparison.png`: Side-by-side easy vs hard, humor vs sentiment
+- `figure4_cross_model.png`: GPT-2 vs Pythia-410M comparison
+- `figure5_lora_detail.png`: Detailed LoRA rank analysis
+
+## 5. Result Analysis
+
+### Key Findings
+
+1. **Finding 1: Humor vs. non-humor text style is rank-1 separable (99.8% accuracy)**. A single linear direction in GPT-2&#39;s hidden space (layer 8) perfectly separates jokes from factual text. This holds across models (Pythia-410M: 100%).
+
+2. **Finding 2: This &#34;humor direction&#34; primarily captures text register/style, not humor understanding**. When controlling for style (jokes vs. unfunny jokes), accuracy drops to 52-60%, barely above chance. Even full-rank linear probes achieve only ~60%.
+
+3. **Finding 3: LoRA at rank 0 (classification head only) achieves 98.3%**. The frozen GPT-2 representations already contain enough information for humor vs. non-humor classification. LoRA rank 1 adds only 1.2% improvement.
+
+4. **Finding 4: True humor quality discrimination appears non-linear or requires semantics beyond simple representations**. High-score vs. low-score Reddit joke classification peaks at 61% with full-rank linear probes.
+
+5. **Finding 5: Sentiment is more linearly separable than humor quality, but less than humor style**. SST-2 sentiment achieves 76.7% with full-rank probes vs. humor quality&#39;s 60%.
+
+### Hypothesis Testing Results
+
+**H1 (Linear separability)**: **Supported for style, not for humor understanding**. Humor vs non-humor text is linearly separable (99.8%), but humor quality (funny vs unfunny) is not well linearly separable (60%).
+
+**H2 (Low-rank humor subspace)**: **Partially supported**. The humor-style subspace is rank-1. But this is a trivial result---the model detects text register, not humor. The humor-quality subspace shows no clear low-rank structure.
+
+**H3 (LoRA at low rank)**: **Supported for style detection**. LoRA rank 0-1 suffices. But this again reflects style, not humor.
+
+**H4 (Humor has higher rank than sentiment)**: **Nuanced**. Humor-style detection is actually lower-rank than sentiment (rank 1 vs. sentiment needing rank 64 for 77%). But humor-quality detection is much harder than sentiment.
+
+### Comparison to Literature
+
+- **Tigges et al. (2023)**: Found sentiment is rank-1 in GPT-2. We find humor-style is also rank-1, but this conflates style and content.
+- **Peyrard et al. (2021)**: Found a single &#34;laughing head&#34; in BERT. Our rank-1 finding is consistent, but we show this captures style rather than humor mechanisms.
+- **Aghajanyan et al. (2020)**: Found NLP tasks have low intrinsic dimension. Our LoRA results confirm this for humor-style classification.
+
+### Surprises and Insights
+
+1. **The near-perfect easy task accuracy was surprising** and immediately suggested a confound. The 99.8% rank-1 accuracy is suspiciously high---even sentiment (a simpler binary concept) doesn&#39;t achieve this.
+
+2. **The dramatic drop when controlling for confounds** (99.8% → 60%) reveals that the &#34;humor direction&#34; is really a &#34;text register direction&#34; (informal/conversational vs formal/factual).
+
+3. **Humor quality is nearly linearly undetectable in frozen GPT-2**. This suggests humor comprehension may require:
+   - Non-linear representations (as suggested by Engels et al., 2024)
+   - Fine-tuned representations (the model needs to learn humor-specific features)
+   - Multi-modal or contextual understanding beyond single-sentence representations
+
+### Error Analysis
+
+For the hard tasks, errors show no clear pattern by layer or rank. The ~50-60% accuracy is consistent with the model extracting weak surface features (sentence length, punctuation patterns, question marks) rather than humor content.
+
+### Limitations
+
+1. **Non-humor text quality**: Our &#34;factual sentences&#34; are hand-crafted and stylistically very different from jokes. The easy task confounds humor with text register.
+
+2. **Reddit score as humor proxy**: Reddit upvotes reflect many factors beyond humor quality (timing, subreddit popularity, controversial topics). Low-score may not mean &#34;unfunny.&#34;
+
+3. **Model size**: GPT-2 (124M) and Pythia-410M may be too small to develop rich humor representations. Larger models (7B+) might show different patterns.
+
+4. **Last-token activations**: We use the last token&#39;s hidden state. Humor information may be distributed across multiple token positions.
+
+5. **Binary classification**: We test binary humor detection. Humor is graded and multi-dimensional (types: puns, absurdity, dark humor, etc.).
+
+6. **English only**: All datasets are English. Humor is highly culture- and language-dependent.
+
+## 6. Conclusions
+
+### Summary
+
+The effective rank of humor recognition in LLMs depends critically on what &#34;humor recognition&#34; means. **Distinguishing joke-style text from non-joke text is rank-1**---a single linear direction in GPT-2&#39;s activation space achieves 99.8% accuracy, and LoRA rank 0 (just a classification head) achieves 98.3%. However, **distinguishing genuinely funny from unfunny text is not well captured by any low-rank linear subspace** of frozen LLM representations, with best-case accuracy of ~60% regardless of rank.
+
+### Implications
+
+- **For interpretability**: The linear representation hypothesis extends to text register/style features but may not extend to more nuanced semantic properties like humor quality. Not all human-meaningful concepts are linearly represented.
+
+- **For practical applications**: LoRA at rank 1 suffices for joke-vs-non-joke classification, but this is a shallow task. Building a humor quality classifier likely requires fine-tuning with non-linear probes or larger models.
+
+- **For humor research**: LLMs&#39; ability to &#34;recognize humor&#34; in benchmarks may be significantly inflated by stylistic confounds. Studies should control for text register when evaluating humor understanding.
+
+### Confidence in Findings
+
+**High confidence**: The rank-1 separability of humor-style and the failure of linear probes on humor-quality are robust across models and experimental configurations.
+
+**Moderate confidence**: The interpretation that &#34;humor quality requires non-linear representations&#34; could be challenged by better datasets, larger models, or more sophisticated probing methods.
+
+## 7. Next Steps
+
+### Immediate Follow-ups
+1. **Larger models**: Repeat with LLaMA-7B or GPT-2 XL to test if humor quality becomes more linearly separable at scale
+2. **Non-linear probes**: Use MLP probes (2-layer, varying width) to measure if humor quality is non-linearly but low-dimensionally represented
+3. **Better humor dataset**: Use the Unfun.me paired dataset (funny headline vs. same headline with humor removed) to eliminate stylistic confounds entirely
+
+### Alternative Approaches
+- **Sparse autoencoders**: Find humor-related features using SAE decomposition (Anthropic, 2023)
+- **Activation patching**: Causally verify whether identified directions actually affect humor generation behavior
+- **LoReFT**: Use representation fine-tuning (Wu et al., 2024) which operates directly in representation space
+
+### Broader Extensions
+- Compare humor rank across cultures/languages
+- Test whether different humor types (puns, absurdity, irony) have distinct subspaces
+- Investigate whether humor rank decreases with model scale (analogous to intrinsic dimensionality findings)
+
+### Open Questions
+- Is humor fundamentally a higher-dimensional concept than sentiment, or do we just lack the right datasets?
+- Can non-linear probes reveal a low-dimensional but curved humor manifold?
+- Does fine-tuning create new humor representations or sharpen existing ones?
+
+## References
+
+1. Tigges, C., Hollinsworth, O.A.L., Geiger, A., &amp; Nanda, N. (2023). Linear Representations of Sentiment in Large Language Models. arXiv:2310.15154
+2. Peyrard, M., Borges, B., Gligoric, K., &amp; West, R. (2021). Laughing Heads: Can Transformers Detect What Makes a Sentence Funny? IJCAI. arXiv:2105.09142
+3. Aghajanyan, A., Zettlemoyer, L., &amp; Gupta, S. (2020). Intrinsic Dimensionality Explains the Effectiveness of Language Model Fine-Tuning. arXiv:2012.13255
+4. Hu, E.J., et al. (2021). LoRA: Low-Rank Adaptation of Large Language Models. arXiv:2106.09685
+5. Marks, S. &amp; Tegmark, M. (2023). The Geometry of Truth. arXiv:2310.06824
+6. Engels, J., Liao, I., &amp; Tegmark, M. (2024). Not All Language Model Features Are Linear. arXiv:2405.14860
+7. Wu, Z., et al. (2024). ReFT: Representation Finetuning for Language Models. arXiv:2402.14700
+8. Zou, A., et al. (2023). Representation Engineering. arXiv:2310.01405
+9. Hewitt, J. &amp; Liang, P. (2019). Designing and Interpreting Probes with Control Tasks. arXiv:1909.03368
+10. Meaney, J.A., et al. (2021). SemEval 2021 Task 7: HaHackathon. arXiv:2105.13602
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: How Low Rank is Humor Recognition in LLMs?
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+Understanding how LLMs internally represent humor has both scientific and practical significance. If humor recognition is low-rank, it means (1) humor can be efficiently fine-tuned with minimal parameters (LoRA at tiny ranks), (2) humor can be steered or suppressed via simple representation interventions, and (3) humor, despite being a complex cognitive phenomenon involving incongruity, surprise, and social context, may be reducible to a small number of latent features in neural networks.
+
+### Gap in Existing Work
+Based on the literature review, linear/low-rank representations have been studied for sentiment (Tigges et al., 2023), truth (Marks &amp; Tegmark, 2023), and safety concepts (Zou et al., 2023), but **no existing work directly measures the rank of humor recognition in LLMs**. The &#34;Laughing Heads&#34; paper (Peyrard et al., 2021) showed humor concentrates in a single attention head in BERT, but didn&#39;t measure the dimensionality of the representation space. Intrinsic dimensionality studies (Aghajanyan et al., 2020) measured standard NLP tasks but not humor.
+
+### Our Novel Contribution
+We provide the first systematic measurement of the rank/dimensionality of humor recognition in LLM hidden representations, using multiple complementary methods:
+1. PCA of humor-vs-non-humor activation differences to measure explained variance by rank
+2. Linear probing at varying dimensions (1D to full) across layers
+3. LoRA fine-tuning at varying ranks to find the minimum effective rank
+4. Comparison against sentiment (expected rank ~1) as calibration
+
+### Experiment Justification
+- **Experiment 1 (Activation Collection &amp; PCA)**: Directly answers &#34;how many dimensions span the humor subspace&#34; by examining the singular value spectrum of humor-related activations.
+- **Experiment 2 (Multi-dimensional Linear Probes)**: Tests whether humor classification accuracy saturates at low rank, providing a functional measure of rank.
+- **Experiment 3 (LoRA at Varying Ranks)**: Measures rank from a fine-tuning perspective - what&#39;s the minimum rank adapter that achieves competitive humor detection?
+- **Experiment 4 (Comparison with Sentiment)**: Calibrates our findings against a known low-rank concept (sentiment ≈ rank 1) to contextualize humor&#39;s rank.
+
+## Research Question
+Is humor recognition in LLMs captured by a low-dimensional (low-rank) subspace of the hidden representations, and if so, what is its effective rank compared to other concepts like sentiment?
+
+## Hypothesis Decomposition
+1. **H1**: Hidden representations of LLMs contain linearly separable humor information (testable via linear probing accuracy &gt; random baseline).
+2. **H2**: The humor subspace is low-rank: a small number of principal components (e.g., &lt;10) explain &gt;90% of the variance in humor-related activation differences.
+3. **H3**: LoRA fine-tuning at low ranks (r ≤ 8) achieves &gt;90% of full fine-tuning performance for humor detection.
+4. **H4**: Humor has higher effective rank than sentiment (which is ~1D) but is still low-rank relative to the full representation space.
+
+## Proposed Methodology
+
+### Approach
+We use GPT-2 small (124M parameters) as our primary model, leveraging TransformerLens for activation extraction. We collect hidden representations for humor (Short Jokes dataset) and non-humor text (news-style factual sentences), then analyze the dimensionality of the humor-discriminating subspace through PCA, linear probing, and LoRA fine-tuning.
+
+### Models
+- **Primary**: GPT-2 small (124M) via TransformerLens - well-studied, fast, fits in memory
+- **Scale test**: Pythia-410M to check if rank changes with model size
+
+### Datasets
+- **Humor**: Short Jokes dataset (231K jokes) - sample 2,000 for activation analysis, 5,000 for LoRA
+- **Non-humor**: OpenWebText or news sentences matched in length
+- **Sentiment comparison**: Stanford Sentiment Treebank (available in reference code)
+
+### Experimental Steps
+
+1. **Data Preparation** (30 min)
+   - Load Short Jokes, sample and clean
+   - Generate non-humor text from factual/news sources
+   - Create balanced humor/non-humor dataset
+   - Create train/val/test splits (60/20/20)
+
+2. **Activation Collection** (30 min)
+   - Run texts through GPT-2 small
+   - Extract hidden states at every layer (last token position)
+   - Store activations for humor and non-humor texts separately
+
+3. **PCA / SVD Analysis** (20 min)
+   - Compute mean difference between humor/non-humor activations per layer
+   - Run PCA on the activation difference matrix
+   - Plot singular value spectrum and cumulative explained variance
+   - Identify the effective rank (number of components for 90%/95%/99% variance)
+
+4. **Linear Probing at Varying Dimensions** (30 min)
+   - Train linear probes with constrained rank (1D, 2D, 4D, 8D, 16D, full)
+   - Measure accuracy at each rank per layer
+   - Plot accuracy vs rank curves to find saturation point
+
+5. **LoRA Fine-tuning** (60 min)
+   - Fine-tune GPT-2 with LoRA at ranks 1, 2, 4, 8, 16, 32, 64
+   - Measure humor classification accuracy at each rank
+   - Find minimum rank achieving 90% of full fine-tuning
+
+6. **Sentiment Comparison** (30 min)
+   - Repeat PCA and linear probing for sentiment (SST-2)
+   - Compare rank profiles between humor and sentiment
+
+### Baselines
+- Random direction baseline (shuffled labels for probing)
+- Full-rank linear probe (upper bound for linear separability)
+- Full fine-tuning (upper bound for LoRA comparison)
+
+### Evaluation Metrics
+- **Classification accuracy &amp; F1**: For probing and LoRA experiments
+- **Cumulative explained variance**: From PCA/SVD analysis
+- **Effective rank (d90)**: Dimensions needed for 90% of peak performance
+- **Singular value ratio**: σ₁/σ_k to measure concentration
+
+### Statistical Analysis Plan
+- Bootstrap confidence intervals (1000 resamples) for probe accuracies
+- 3 random seeds for LoRA experiments, report mean ± std
+- Wilcoxon signed-rank test for humor vs sentiment rank comparisons
+
+## Expected Outcomes
+- **If humor is very low-rank (rank 1-3)**: Similar to sentiment, humor would be a near-linear concept in LLM space. LoRA at r=1-2 would suffice.
+- **If humor is moderately low-rank (rank 4-16)**: Humor is more complex than sentiment but still compressible. LoRA at r=4-8 would be needed.
+- **If humor is high-rank (&gt;16)**: Humor requires many latent dimensions, suggesting it&#39;s a fundamentally multi-faceted concept that resists simple linear representation.
+
+## Timeline and Milestones
+- Phase 0-1 (Planning + Review): 30 min ✓
+- Phase 2 (Environment + Data): 30 min
+- Phase 3 (Activation collection + PCA): 45 min
+- Phase 4 (Probing + LoRA experiments): 90 min
+- Phase 5 (Analysis + Visualization): 30 min
+- Phase 6 (Documentation): 30 min
+
+## Potential Challenges
+1. **Memory**: GPT-2 activations for 2000 texts × 12 layers × 768 dims ≈ manageable
+2. **Non-humor text quality**: Need to ensure non-humor text is matched in style/length, not trivially distinguishable
+3. **Humor subjectivity**: Humor is more subjective than sentiment; may lead to noisier representations
+4. **Confounds**: Jokes often have distinctive style (short, setup-punchline) that could be detected by surface features rather than humor understanding
+
+## Success Criteria
+1. Successfully extract and analyze activation patterns for humor vs non-humor
+2. Produce clear rank estimates from at least 2 complementary methods (PCA + probing)
+3. Compare humor&#39;s rank to sentiment&#39;s rank quantitatively
+4. Generate visualizations showing the singular value spectrum and accuracy-vs-rank curves
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: How Low Rank is Humor Recognition in LLMs?
+
+## Research Area Overview
+
+This research sits at the intersection of three fields: (1) computational humor recognition, (2) mechanistic interpretability of LLMs, and (3) low-rank representations in neural networks. The central question is whether humor recognition in LLMs can be captured by a low-dimensional subspace of the model&#39;s hidden representations - analogous to how sentiment has been shown to be linearly represented along a single direction.
+
+## Key Papers
+
+### A. Humor Recognition and Detection
+
+#### 1. Laughing Heads: Can Transformers Detect What Makes a Sentence Funny?
+- **Authors**: Peyrard, Borges, Gligoric, West (EPFL)
+- **Year**: 2021 (IJCAI)
+- **arXiv**: 2105.09142
+- **Key Contribution**: First mechanistic analysis of how transformers recognize humor. Discovered the &#34;laughing head&#34; - a single attention head (head 10-6 in BERT) that specializes in attending to the funny token in sentences, achieving 37% accuracy at identifying the humor-bearing word (5x random baseline).
+- **Methodology**: Fine-tuned BERT on Unfun.me dataset (23K minimal pairs of funny/serious headlines). Analyzed attention patterns across all 144 heads. Used Jensen-Shannon divergence to measure attention distance between funny and serious sentences.
+- **Datasets**: Unfun.me (23,113 paired funny/serious headlines with minimal edits)
+- **Key Results**: 78% paired accuracy; humor detection happens in last transformer layers (semantic, not lexical/syntactic); single attention head explains most of the attention divergence between funny and serious processing.
+- **Code**: https://github.com/epfl-dlab/laughing-head
+- **Relevance**: **CRITICAL** - Directly shows that humor recognition in BERT is concentrated in a small number of model components, suggesting low-rank structure. The &#34;laughing head&#34; finding is strong evidence for a low-dimensional humor representation.
+
+#### 2. SemEval 2021 Task 7: HaHackathon
+- **Authors**: Meaney, Wilson, Chiruzzo, Lopez, Magdy
+- **Year**: 2021
+- **arXiv**: 2105.13602
+- **Key Contribution**: Standard benchmark for humor detection. 10,000 texts annotated by 20 annotators aged 18-70 for humor and offense.
+- **Datasets**: HaHackathon dataset (10K texts with humor/offense ratings)
+- **Results**: Top systems used pre-trained language models with task-adaptive training and adversarial training. F1 up to 0.97 for humor detection.
+- **Relevance**: Primary benchmark dataset for humor detection. Provides both binary humor labels and continuous humor ratings.
+
+#### 3. Uncertainty and Surprisal Jointly Deliver the Punchline
+- **Authors**: Xie, Li, Pu
+- **Year**: 2020
+- **arXiv**: 2012.12007
+- **Key Contribution**: Models humor using incongruity theory - the set-up builds semantic uncertainty, the punchline disrupts expectations. Uses GPT-2 to compute uncertainty and surprisal as features for humor detection.
+- **Methodology**: Splits jokes into set-up and punchline, computes perplexity-based features.
+- **Relevance**: Suggests humor might be partially captured by simple distributional statistics (surprisal/uncertainty), which would imply low-rank representation.
+
+#### 4. ColBERT: Using BERT Sentence Embedding for Computational Humor
+- **Authors**: Annamoradnejad, Zoghi
+- **Year**: 2020
+- **arXiv**: 2004.12765
+- **Key Contribution**: Parallel BERT architecture that processes set-up and punchline separately, then combines. Shows that humor can be detected by comparing representations of joke components.
+- **Relevance**: Architecture design implicitly suggests humor is detectable from the relationship between a small number of representation vectors.
+
+#### 5. What do Humor Classifiers Learn?
+- **Authors**: Inácio, Wick-Pedro, Gonçalo Oliveira
+- **Year**: 2023
+- **Key Contribution**: Analyzed what BERT-based humor classifiers actually learn. Found classifiers rely mostly on stylistic aspects (punctuation, question words) rather than deep humor understanding. Content features achieve 99.64% F1 but may not capture true humor.
+- **Relevance**: Caution that high humor detection performance may not reflect genuine humor understanding, and probing representations for humor-specific features is important.
+
+#### 6. Getting Serious about Humor: Crafting Humor Datasets with Unfunny LLMs
+- **Authors**: Horvitz, Chen, Aditya, Srivastava, West, Yu, McKeown
+- **Year**: 2024
+- **arXiv**: 2403.00794
+- **Key Contribution**: Shows LLMs can &#34;unfun&#34; jokes (remove humor), creating aligned funny/non-funny pairs. GPT-4&#39;s synthetic unfunned data is highly rated by humans. Extends to code-mixed English-Hindi humor.
+- **Relevance**: Provides methodology for creating controlled humor datasets (minimal pairs), which is ideal for probing linear representations.
+
+#### 7. This Joke is [MASK]: Recognizing Humor and Offense with Prompting
+- **Authors**: Li, Zhao, Xie, Maronikolakis, Pu, Schütze
+- **Year**: 2022
+- **arXiv**: 2209.12118
+- **Key Contribution**: Shows prompting performs as well as fine-tuning for humor recognition when data is abundant, and excels in low-resource settings. Uses influence functions to show models rely on offense to determine humor.
+- **Relevance**: Demonstrates humor can be detected through prompting (i.e., through the model&#39;s existing representations), supporting the idea of a pre-existing humor direction.
+
+#### 8. Humor Detection: A Transformer Gets the Last Laugh
+- **Authors**: Weller, Seppi
+- **Year**: 2019
+- **arXiv**: 1909.00252
+- **Key Contribution**: Early work showing transformers achieve near-human performance on humor detection (98.6% on Short Jokes, 93.1% on Puns). Built a new dataset from Reddit ratings.
+- **Citations**: 140
+- **Relevance**: Established that transformers can effectively detect humor, motivating the question of how they do it internally.
+
+### B. Linear and Low-Rank Representations in LLMs
+
+#### 9. Linear Representations of Sentiment in Large Language Models
+- **Authors**: Tigges, Hollinsworth, Geiger, Nanda
+- **Year**: 2023
+- **arXiv**: 2310.15154
+- **Key Contribution**: **Most directly relevant methodology paper.** Shows sentiment is represented linearly in LLMs - a single direction in activation space captures positive/negative sentiment. Found the &#34;summarization motif&#34; where sentiment aggregates on punctuation/name tokens. Ablating this direction removes 76% of SST classification accuracy.
+- **Methodology**: Five methods to find sentiment direction (Mean Difference, K-means, Logistic Regression, DAS, PCA) - all converge to the same direction (cosine similarity 79-99%). Used causal interventions (activation patching, directional ablation) to verify directions are causally relevant. Best generalization at intermediate layers.
+- **Models**: GPT-2, Pythia family (160M to 2.8B)
+- **Relevance**: **CRITICAL** - This is the methodological template for our research. We can apply the exact same methodology to humor instead of sentiment: find a linear humor direction, test it causally, measure its dimensionality.
+
+#### 10. Intrinsic Dimensionality Explains the Effectiveness of Language Model Fine-Tuning
+- **Authors**: Aghajanyan, Zettlemoyer, Gupta (Facebook)
+- **Year**: 2020
+- **arXiv**: 2012.13255
+- **Key Contribution**: **Foundational for the &#34;low rank&#34; question.** Shows NLP tasks have very low intrinsic dimension when fine-tuning pre-trained models. RoBERTa-Large can reach 90% of full fine-tuning performance on MRPC with only 200 parameters. Pre-training implicitly minimizes intrinsic dimension. Larger models have lower intrinsic dimension.
+- **Methodology**: Subspace optimization via Fastfood transform. Structure-Aware Intrinsic Dimension (SAID) method. Binary search for d90 (smallest dimension achieving 90% of full performance).
+- **Key Results**: d90 for MRPC with RoBERTa-Large = 207 (SAID method). Pre-training monotonically decreases intrinsic dimension. Harder tasks have higher intrinsic dimension (ANLI &gt;&gt; Yelp Polarity).
+- **Relevance**: **CRITICAL** - Provides the theoretical framework and measurement methodology for our research. We should measure the intrinsic dimensionality of humor recognition and compare it to other NLP tasks.
+
+#### 11. LoRA: Low-Rank Adaptation of Large Language Models
+- **Authors**: Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, Chen
+- **Year**: 2021
+- **arXiv**: 2106.09685
+- **Key Contribution**: Shows that the weight updates during fine-tuning have low intrinsic rank. LoRA freezes pre-trained weights and injects trainable low-rank decomposition matrices, achieving comparable performance with far fewer trainable parameters.
+- **Methodology**: Decomposes weight update as ΔW = BA where B∈R^{d×r}, A∈R^{r×k}, r &lt;&lt; min(d,k).
+- **Key Results**: Rank r=1-8 sufficient for many tasks. Reduces trainable parameters by up to 10,000x.
+- **Relevance**: **HIGH** - LoRA&#39;s success at low rank directly supports our hypothesis. We can use LoRA rank as a measure of how low-rank humor recognition fine-tuning can be.
+
+#### 12. Representation Engineering: A Top-Down Approach to AI Transparency
+- **Authors**: Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyber, Li, Song, Song, Zhu, Hendrycks, Boyd-Graber
+- **Year**: 2023
+- **arXiv**: 2310.01405
+- **Key Contribution**: Introduces RepE (Representation Engineering) for reading and controlling LLM representations. Identifies linear directions for concepts like honesty, fairness, harmlessness. Shows these can be used to steer model behavior.
+- **Relevance**: Provides additional methodology for finding and manipulating concept directions in LLM representations, applicable to humor.
+
+#### 13. The Geometry of Truth
+- **Authors**: Marks, Tegmark
+- **Year**: 2023
+- **arXiv**: 2310.06824
+- **Key Contribution**: Shows that truth/falsehood is linearly represented in LLM activations. Multiple probe methods converge on similar directions. Truth directions generalize across diverse statement types.
+- **Relevance**: Another demonstration that abstract concepts (truth, like humor) can be linearly represented, supporting our hypothesis.
+
+#### 14. ReFT: Representation Finetuning for Language Models
+- **Authors**: Wu, Arora, Wang, Geiger, Jurafsky, Manning, Potts
+- **Year**: 2024
+- **arXiv**: 2402.14700
+- **Key Contribution**: Fine-tunes by learning interventions on hidden representations rather than weights. LoReFT (Low-rank Linear Subspace ReFT) achieves competitive results with 10-50x fewer parameters than LoRA.
+- **Relevance**: **HIGH** - LoReFT&#39;s success at very low rank directly applies to our question. Using LoReFT for humor could measure the effective rank of humor in representations.
+
+#### 15. Discovering Latent Knowledge in Language Models Without Supervision
+- **Authors**: Burns, Ye, Klein, Steinhardt
+- **Year**: 2022
+- **arXiv**: 2212.03827
+- **Key Contribution**: Contrast Consistent Search (CCS) finds latent knowledge directions without labels. Shows LLMs have internal representations of truth that can be extracted unsupervised.
+- **Relevance**: Methodology for finding concept directions without labeled data, potentially applicable to humor.
+
+#### 16. Not All Language Model Features Are Linear
+- **Authors**: Engels, Liao, Tegmark
+- **Year**: 2024
+- **arXiv**: 2405.14860
+- **Key Contribution**: Shows some features in LLMs are represented as multi-dimensional, non-linear structures (e.g., circular features for periodic concepts like days/months). Challenges pure linear representation hypothesis.
+- **Relevance**: Important caveat - humor may not be purely linear. Could require higher-dimensional (but still low-rank) representation structure.
+
+### C. Probing and Mechanistic Interpretability
+
+#### 17. Designing and Interpreting Probes with Control Tasks
+- **Authors**: Hewitt, Liang
+- **Year**: 2019
+- **arXiv**: 1909.03368
+- **Key Contribution**: Introduces &#34;control tasks&#34; to ensure probing classifiers measure genuine linguistic knowledge rather than probe memorization capacity. Defines selectivity as the difference between linguistic and control task accuracy.
+- **Relevance**: Essential methodology for properly probing humor representations - we need control tasks to ensure any humor direction we find is genuine.
+
+#### 18. Do LLMs Understand Social Knowledge? SocKET Benchmark
+- **Authors**: Choi, Pei, Kumar, Shu, Jurgens
+- **Year**: 2023
+- **arXiv**: 2305.14938
+- **Key Contribution**: 58 NLP tasks testing social knowledge including humor and sarcasm. Shows potential for task transfer among social knowledge tasks. Pre-trained models have some innate but limited social language understanding.
+- **Relevance**: Provides context for humor as part of broader social understanding in LLMs.
+
+## Common Methodologies
+
+### For Finding Linear Directions
+- **Mean Difference**: Compute centroid difference between positive/negative examples (used in Tigges et al., Marks et al.)
+- **K-means**: Cluster activations into 2 groups, take direction between centroids
+- **Logistic Regression / Linear Probing**: Train linear classifier, use weight vector as direction
+- **PCA**: First principal component of activations
+- **DAS (Distributed Alignment Search)**: Learn direction that maximizes causal intervention effect
+
+All methods tend to converge to similar directions (cosine similarity &gt;80%), suggesting a genuine underlying direction.
+
+### For Measuring Low-Rankness
+- **Intrinsic Dimensionality (d90)**: Find smallest subspace dimension achieving 90% of full performance (Aghajanyan et al.)
+- **LoRA Rank**: Minimum rank of LoRA adapter achieving target performance
+- **Linear Probe Accuracy**: How well a linear classifier captures the concept
+- **Directional Ablation**: Remove a single direction and measure performance drop
+- **Activation Patching**: Swap activations along a direction and measure behavior change
+
+### For Causal Validation
+- **Activation Patching**: Swap activations between clean/corrupted examples
+- **Directional Ablation**: Zero out component along specific direction
+- **Activation Addition**: Add multiples of direction to steer model behavior
+
+## Standard Baselines
+
+1. **Full fine-tuning** of BERT/RoBERTa for humor detection
+2. **Linear probing** of frozen LLM representations
+3. **LoRA fine-tuning** at various ranks (r=1,2,4,8,16,...)
+4. **Random direction** baseline (control for linear probing)
+5. **GPT-2 perplexity** baseline (surprisal-based humor detection)
+
+## Evaluation Metrics
+
+- **Accuracy / F1-score**: For humor detection classification
+- **d90 (intrinsic dimension)**: For measuring low-rankness
+- **Cosine similarity**: Between directions found by different methods
+- **Logit difference / logit flip rate**: For causal intervention experiments
+- **Explained variance**: By top-k principal components of humor-related activations
+
+## Datasets in the Literature
+
+| Dataset | Used In | Task | Size |
+|---------|---------|------|------|
+| Unfun.me | Laughing Heads | Paired humor detection | 23K pairs |
+| HaHackathon (SemEval 2021 Task 7) | Multiple | Binary humor + rating | 10K texts |
+| Short Jokes | Weller &amp; Seppi 2019 | Humor detection | 231K jokes |
+| Reddit Jokes | Multiple | Humor detection | 1M+ posts |
+| Humicroedit / FunLines | Multiple | Humor editing/generation | ~15K pairs |
+| Stanford Sentiment Treebank | Linear Sentiment | Sentiment classification | 10.6K sentences |
+| ToyMovieReview | Linear Sentiment | Sentiment probing | ~170 templates |
+
+## Gaps and Opportunities
+
+1. **No existing work directly measures the rank of humor recognition in LLMs** - This is the central gap our research addresses.
+2. **Linear representation studies focus on sentiment, truth, and safety** - humor is an unexplored target for this methodology.
+3. **Humor interpretability work (Laughing Heads) uses attention analysis, not representation probing** - deeper mechanistic understanding via probing/ablation is needed.
+4. **Intrinsic dimensionality was measured for standard NLP tasks but not humor** - humor may be higher-dimensional than sentiment due to its subjective, context-dependent nature.
+5. **No comparison of humor&#39;s representational complexity vs. other figurative language tasks** (sarcasm, irony, metaphor).
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **Primary**: Short Jokes dataset (231K, well-studied, binary humor labels) + non-joke text for negative examples
+2. **Secondary**: Unfun.me aligned pairs (minimal pairs ideal for probing)
+3. **Validation**: HaHackathon (standard benchmark with human ratings)
+
+### Recommended Models
+1. **GPT-2 small** (85M) - well-studied, good for initial probing
+2. **Pythia family** (70M-2.8B) - multiple scales, same architecture, used in Linear Sentiment paper
+3. **Llama-2/3** (7B+) - larger modern models, if compute allows
+
+### Recommended Methodology
+1. **Collect humor/non-humor activation datasets** from LLM hidden states
+2. **Find humor direction(s)** using multiple methods (Mean Diff, PCA, LR, K-means, DAS)
+3. **Measure rank**:
+   - Singular value decomposition of humor-related activation differences
+   - Intrinsic dimensionality via subspace training (d90)
+   - LoRA/LoReFT fine-tuning at varying ranks
+   - Number of principal components needed to explain variance
+4. **Causal validation**: Activation patching, directional ablation
+5. **Compare to baselines**: Sentiment (expected rank ~1), random (expected high rank)
+
+### Recommended Metrics
+- **d90**: Intrinsic dimension for humor classification
+- **Minimum LoRA rank** achieving 90% of full fine-tuning
+- **Linear probe accuracy** (single direction vs multi-dimensional)
+- **Ablation impact**: Performance drop when removing top-k humor directions
+- **Cross-task comparison**: Humor d90 vs. sentiment d90 vs. other tasks
+
+### Methodological Considerations
+- Use **control tasks** (Hewitt &amp; Liang, 2019) to validate probing results
+- Test across **multiple model scales** to see if humor rank changes with model size
+- Consider that humor may be **multi-dimensional** (not purely linear) - test rank &gt;1
+- Account for **humor subtypes** (puns, absurdity, obscenity have different mechanisms)
+- Humor is more **subjective** than sentiment - may have higher variance in representations
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+3. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+4. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+5. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+6. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+7. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+8. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+9. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Create paper_draft/commands/ directory with:
+   - math.tex: Math notation macros (copy from templates/paper_writing/commands/)
+   - general.tex: Formatting macros (copy from templates/paper_writing/commands/)
+   - macros.tex: Project-specific term definitions
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read templates/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

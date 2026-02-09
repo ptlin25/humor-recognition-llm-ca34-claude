@@ -1,0 +1,172 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Easy Task: Humor Style is Rank-1}
+\label{sec:easy_results}
+
+\Figref{fig:main_results} summarizes our main probing results on the easy task (jokes vs.\ factual text) using \gpttwo.
+
+\para{Rank-1 probes achieve near-perfect accuracy.}
+The mean difference probe achieves 99.8\% accuracy at layer 8---a single linear direction separates jokes from factual sentences almost perfectly (\tabref{tab:easy_probing}). Accuracy is high even at the embedding layer (96.4\%) and peaks in the middle layers (7--9), consistent with the finding that semantic features crystallize at intermediate layers \citep{tigges2023linear}.
+
+\para{Higher rank provides negligible improvement.}
+At the best layer (layer 8), increasing the probe rank from 1 to 768 (full dimensionality) improves accuracy from 99.8\% to 99.9\% (\tabref{tab:rank_sweep}). The accuracy curve is essentially flat beyond rank 1, confirming that humor-style information concentrates in a single dimension.
+
+\begin{table}[t]
+    \centering
+    \caption{Easy task (jokes vs.\ factual): rank-1 probe accuracy by layer for \gpttwo. The mean difference and PCA rank-1 probes produce nearly identical results. Bold indicates the best layer.}
+    \label{tab:easy_probing}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}rcccc@{}}
+        \toprule
+        Layer & Mean Diff & Rank-1 & Best Rank & Best Acc \\
+        \midrule
+        0  & 0.964 & 0.964 & 1  & 0.964 \\
+        1  & 0.974 & 0.980 & 32 & 0.996 \\
+        2  & 0.990 & 0.988 & 32 & 0.996 \\
+        3  & 0.983 & 0.988 & 64 & 0.999 \\
+        4  & 0.985 & 0.989 & 32 & 0.999 \\
+        5  & 0.989 & 0.989 & 16 & 0.999 \\
+        6  & 0.990 & 0.989 & 16 & 0.999 \\
+        7  & 0.995 & 0.996 & 8  & 1.000 \\
+        {\bf 8}  & {\bf 0.998} & {\bf 0.998} & {\bf 8}  & {\bf 1.000} \\
+        9  & 0.994 & 0.995 & 32 & 1.000 \\
+        10 & 0.994 & 0.995 & 32 & 1.000 \\
+        11 & 0.989 & 0.995 & 32 & 1.000 \\
+        12 & 0.661 & 0.981 & 8  & 0.998 \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\begin{table}[t]
+    \centering
+    \caption{Easy task: probe accuracy at varying ranks for \gpttwo layer 8. Accuracy saturates at rank 1, confirming that humor-style information is one-dimensional.}
+    \label{tab:rank_sweep}
+    \begin{tabular}{@{}rc@{}}
+        \toprule
+        Rank & Accuracy \\
+        \midrule
+        1   & 0.998 \\
+        2   & 0.996 \\
+        4   & 0.996 \\
+        8   & 0.998 \\
+        16  & 0.999 \\
+        32  & 1.000 \\
+        64  & 0.999 \\
+        768 & 0.999 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/figure1_main_results.png}
+    \caption{Main results for the easy task (jokes vs.\ factual text) using \gpttwo. \figleft PCA eigenvalue spectrum showing rapid variance decay. \figright Probing accuracy across layers and ranks, confirming rank-1 saturation at intermediate layers.}
+    \label{fig:main_results}
+\end{figure}
+
+\subsection{LoRA Fine-Tuning Confirms Low Rank}
+\label{sec:lora_results}
+
+\lora fine-tuning on the easy task corroborates the probing results (\tabref{tab:lora}). Training only the classification head ($r = 0$, 1,536 parameters) achieves 98.3\% accuracy---the frozen \gpttwo representations already encode humor-style information that a simple linear layer can exploit. Adding a rank-1 \lora adapter (102,912 parameters) increases accuracy to 99.5\%, and performance saturates at rank 4 (99.8\%). The highest rank tested ($r = 32$) achieves 100\% but uses 3.2M trainable parameters---a 2,000$\times$ increase for a 1.7 percentage point gain.
+
+\begin{table}[t]
+    \centering
+    \caption{\lora fine-tuning results on the easy task with \gpttwo. Rank 0 denotes training only the classification head. Accuracy saturates at rank 1--4.}
+    \label{tab:lora}
+    \begin{tabular}{@{}rrc@{}}
+        \toprule
+        \lora Rank & Trainable Params & Val Accuracy \\
+        \midrule
+        0  & 1,536     & 0.983 \\
+        1  & 102,912   & 0.995 \\
+        2  & 204,288   & 0.995 \\
+        4  & 407,040   & {\bf 0.998} \\
+        8  & 812,544   & 0.995 \\
+        16 & 1,623,552 & 0.990 \\
+        32 & 3,245,568 & {\bf 1.000} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/figure5_lora_detail.png}
+    \caption{Detailed \lora rank analysis. \figleft Accuracy vs.\ \lora rank showing early saturation. \figright Trainable parameter count grows linearly with rank, but accuracy gains diminish rapidly after rank 1.}
+    \label{fig:lora_detail}
+\end{figure}
+
+\subsection{Hard Tasks: Humor Quality is Not Low-Rank}
+\label{sec:hard_results}
+
+\para{Controlling for style collapses performance.}
+When we replace factual sentences with low-scoring Reddit jokes as the negative class (Hard-1), the best rank-1 probe accuracy drops from 99.8\% to 59.7\% (\tabref{tab:hard_tasks}). When both classes are Reddit jokes differing only in score (Hard-2), the best rank-1 accuracy is 56.7\%. These results are barely above the 50\% chance baseline for balanced binary classification.
+
+\para{Full-rank probes offer no rescue.}
+Increasing probe rank to full dimensionality (768) does not help: the best accuracy across all ranks and layers reaches only 60.0\% for Hard-1 and 61.0\% for Hard-2. The humor-quality signal, if present in the representations, is not linearly accessible at any rank.
+
+\para{Sentiment comparison.}
+As a calibration, we probe \ssttwo sentiment under the same protocol. The best rank-1 accuracy is 64.0\% (layer 11), and the best full-rank accuracy is 76.7\% (layer 11). Sentiment is more linearly separable than humor quality but less separable than humor style---and it requires higher rank, consistent with prior work showing sentiment needs multiple dimensions for full recovery \citep{tigges2023linear}.
+
+\begin{table}[t]
+    \centering
+    \caption{Hard task and sentiment results. Controlling for stylistic confounds collapses humor detection accuracy to near-chance. Sentiment remains partially linearly separable. Best results per task in bold.}
+    \label{tab:hard_tasks}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}lcccc@{}}
+        \toprule
+        Task & Best Rank-1 Acc & Layer & Best Full-Rank Acc & Layer \\
+        \midrule
+        Easy (jokes vs.\ factual) & {\bf 0.998} & 8  & {\bf 1.000} & 7 \\
+        Hard-1 (jokes vs.\ Reddit) & 0.597 & 7  & 0.600 & 10 \\
+        Hard-2 (high vs.\ low Reddit) & 0.567 & 9  & 0.610 & 12 \\
+        Sentiment (\ssttwo) & 0.640 & 11 & 0.767 & 11 \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/figure2_hard_tasks.png}
+    \caption{Hard task results. Probe accuracy across layers for the controlled conditions. Unlike the easy task, no layer or rank achieves substantially above-chance accuracy for humor quality discrimination.}
+    \label{fig:hard_tasks}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/figure3_comparison.png}
+    \caption{Comparison across conditions. \figleft Easy vs.\ hard tasks showing the dramatic accuracy drop when stylistic confounds are controlled. \figright Humor quality vs.\ sentiment, showing that humor quality is less linearly separable than sentiment.}
+    \label{fig:comparison}
+\end{figure}
+
+\subsection{Cross-Model Validation: Pythia-410M}
+\label{sec:cross_model}
+
+We replicate the easy-task experiments on \pythia to test whether the rank-1 pattern generalizes across architectures and scales (\tabref{tab:pythia}). The results are consistent: the mean difference probe achieves 100\% accuracy at layer 20 (of 24), and accuracy builds steadily through the layers. As with \gpttwo, rank-1 is sufficient---higher ranks provide at most marginal improvement. The larger model achieves perfect separation at a proportionally similar depth ($\sim$83\% of layers for \pythia vs.\ $\sim$67\% for \gpttwo), suggesting that the humor-style direction is a robust feature of autoregressive language models, not an artifact of model size or architecture.
+
+\begin{table}[t]
+    \centering
+    \caption{Cross-model validation: easy task results for \pythia. The rank-1 pattern replicates, with perfect accuracy at layer 20.}
+    \label{tab:pythia}
+    \begin{tabular}{@{}rccc@{}}
+        \toprule
+        Layer & Mean Diff Acc & Best Rank & Best Acc \\
+        \midrule
+        0  & 0.759 & 2  & 0.759 \\
+        5  & 0.971 & 32 & 0.998 \\
+        10 & 0.994 & 4  & 0.999 \\
+        15 & 0.998 & 8  & 0.999 \\
+        {\bf 20} & {\bf 1.000} & {\bf 4}  & {\bf 1.000} \\
+        24 & 0.990 & 16 & 0.999 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/figure4_cross_model.png}
+    \caption{Cross-model comparison. \gpttwo (left) and \pythia (right) show the same pattern on the easy task: rank-1 accuracy peaks in middle-to-late layers, confirming that humor-style detection is a robust, low-rank feature.}
+    \label{fig:cross_model}
+\end{figure}

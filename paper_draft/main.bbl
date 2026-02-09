@@ -1,0 +1,146 @@
+\begin{thebibliography}{20}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Aghajanyan et~al.(2020)Aghajanyan, Zettlemoyer, and
+  Gupta]{aghajanyan2020intrinsic}
+Armen Aghajanyan, Luke Zettlemoyer, and Sonal Gupta.
+\newblock Intrinsic dimensionality explains the effectiveness of language model
+  fine-tuning.
+\newblock \emph{arXiv preprint arXiv:2012.13255}, 2020.
+
+\bibitem[Biderman et~al.(2023)Biderman, Schoelkopf, Anthony, Bradley, O'Brien,
+  Hallahan, Khan, Purohit, Prashanth, Raff, et~al.]{biderman2023pythia}
+Stella Biderman, Hailey Schoelkopf, Quentin Anthony, Herbie Bradley, Kyle
+  O'Brien, Eric Hallahan, Mohammad~Aflah Khan, Shivanshu Purohit, USVSN~Sai
+  Prashanth, Edward Raff, et~al.
+\newblock Pythia: A suite for analyzing large language models across training
+  and scaling.
+\newblock In \emph{Proceedings of the 40th International Conference on Machine
+  Learning}, 2023.
+
+\bibitem[Burns et~al.(2022)Burns, Ye, Klein, and
+  Steinhardt]{burns2022discovering}
+Collin Burns, Haotian Ye, Dan Klein, and Jacob Steinhardt.
+\newblock Discovering latent knowledge in language models without supervision.
+\newblock \emph{arXiv preprint arXiv:2212.03827}, 2022.
+
+\bibitem[Elhage et~al.(2022)Elhage, Hume, Olsson, Schiefer, Henighan, Kravec,
+  Hatfield-Dodds, Lasenby, Drain, Chen, et~al.]{elhage2022toy}
+Nelson Elhage, Tristan Hume, Catherine Olsson, Nicholas Schiefer, Tom Henighan,
+  Shauna Kravec, Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain, Carol Chen,
+  et~al.
+\newblock Toy models of superposition.
+\newblock \emph{arXiv preprint arXiv:2209.10652}, 2022.
+
+\bibitem[Engels et~al.(2024)Engels, Liao, and Tegmark]{engels2024not}
+Joshua Engels, Isaac Liao, and Max Tegmark.
+\newblock Not all language model features are linear.
+\newblock \emph{arXiv preprint arXiv:2405.14860}, 2024.
+
+\bibitem[Hewitt and Liang(2019)]{hewitt2019designing}
+John Hewitt and Percy Liang.
+\newblock Designing and interpreting probes with control tasks.
+\newblock \emph{arXiv preprint arXiv:1909.03368}, 2019.
+
+\bibitem[Horvitz et~al.(2024)Horvitz, Chen, Aditya, Srivastava, West, Yu, and
+  McKeown]{horvitz2024getting}
+Zachary Horvitz, Jingru Chen, Rahul Aditya, Kanishk Srivastava, Robert West,
+  Zhou Yu, and Kathleen McKeown.
+\newblock Getting serious about humor: Crafting humor datasets with unfunny
+  {LLM}s.
+\newblock \emph{arXiv preprint arXiv:2403.00794}, 2024.
+
+\bibitem[Hu et~al.(2021)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and
+  Chen]{hu2021lora}
+Edward~J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
+  Wang, Lu~Wang, and Weizhu Chen.
+\newblock {LoRA}: Low-rank adaptation of large language models.
+\newblock \emph{arXiv preprint arXiv:2106.09685}, 2021.
+
+\bibitem[In{\'a}cio et~al.(2023)In{\'a}cio, Wick-Pedro, and
+  Gon{\c{c}}alo~Oliveira]{inacio2023humor}
+Marcio~Lima In{\'a}cio, Gabriela Wick-Pedro, and Hugo Gon{\c{c}}alo~Oliveira.
+\newblock What do humor classifiers learn? an attempt to explain
+  transformer-based humor recognition models.
+\newblock \emph{Information}, 14\penalty0 (5):\penalty0 300, 2023.
+
+\bibitem[Li et~al.(2022)Li, Zhao, Xie, Maronikolakis, Pu, and
+  Sch{\"u}tze]{li2022joke}
+Junze Li, Mengjie Zhao, Yubo Xie, Antonis Maronikolakis, Pearl Pu, and Hinrich
+  Sch{\"u}tze.
+\newblock This joke is [{MASK}]: Recognizing humor and offense with prompting.
+\newblock \emph{arXiv preprint arXiv:2209.12118}, 2022.
+
+\bibitem[Marks and Tegmark(2023)]{marks2023geometry}
+Samuel Marks and Max Tegmark.
+\newblock The geometry of truth: Emergent linear structure in large language
+  model representations of true/false datasets.
+\newblock \emph{arXiv preprint arXiv:2310.06824}, 2023.
+
+\bibitem[Meaney et~al.(2021)Meaney, Wilson, Chiruzzo, Lopez, and
+  Magdy]{meaney2021semeval}
+J~A Meaney, Steven~R Wilson, Luis Chiruzzo, Adam Lopez, and Walid Magdy.
+\newblock {SemEval}-2021 task 7: {HaHackathon}, detecting and rating humor and
+  offense.
+\newblock \emph{arXiv preprint arXiv:2105.13602}, 2021.
+
+\bibitem[Nanda et~al.(2023)Nanda, Lee, and Wattenberg]{nanda2023emergent}
+Neel Nanda, Andrew Lee, and Martin Wattenberg.
+\newblock Emergent linear representations in world models of self-supervised
+  sequence models.
+\newblock \emph{arXiv preprint arXiv:2309.00941}, 2023.
+
+\bibitem[Peyrard et~al.(2021)Peyrard, Borges, Gligori{\'c}, and
+  West]{peyrard2021laughing}
+Maxime Peyrard, Beatriz Borges, Kristina Gligori{\'c}, and Robert West.
+\newblock Laughing heads: Can transformers detect what makes a sentence funny?
+\newblock In \emph{Proceedings of the Thirtieth International Joint Conference
+  on Artificial Intelligence (IJCAI)}, 2021.
+
+\bibitem[Radford et~al.(2019)Radford, Wu, Child, Luan, Amodei, and
+  Sutskever]{radford2019language}
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya
+  Sutskever.
+\newblock Language models are unsupervised multitask learners.
+\newblock \emph{OpenAI Blog}, 2019.
+
+\bibitem[Tigges et~al.(2023)Tigges, Hollinsworth, Geiger, and
+  Nanda]{tigges2023linear}
+Curt Tigges, Oskar John~Lincoln Hollinsworth, Atticus Geiger, and Neel Nanda.
+\newblock Linear representations of sentiment in large language models.
+\newblock \emph{arXiv preprint arXiv:2310.15154}, 2023.
+
+\bibitem[Weller and Seppi(2019)]{weller2019humor}
+Orion Weller and Kevin Seppi.
+\newblock Humor detection: A transformer gets the last laugh.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, 2019.
+
+\bibitem[Wu et~al.(2024)Wu, Arora, Wang, Geiger, Jurafsky, Manning, and
+  Potts]{wu2024reft}
+Zhengxuan Wu, Aryaman Arora, Zheng Wang, Atticus Geiger, Dan Jurafsky,
+  Christopher~D Manning, and Christopher Potts.
+\newblock {ReFT}: Representation finetuning for language models.
+\newblock \emph{arXiv preprint arXiv:2402.14700}, 2024.
+
+\bibitem[Xie et~al.(2020)Xie, Li, and Pu]{xie2020uncertainty}
+Yubo Xie, Junze Li, and Pearl Pu.
+\newblock Uncertainty and surprisal jointly deliver the punchline: Exploiting
+  incongruity-based features for humor recognition.
+\newblock \emph{arXiv preprint arXiv:2012.12007}, 2020.
+
+\bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin,
+  Mazeika, Dombrowski, Goel, Li, Byun, Wang, Mallen, Basart, Koyber, Song,
+  Fredrikson, Kolter, and Hendrycks]{zou2023representation}
+Andy Zou, Long Phan, Sarah Chen, James Campbell, Phillip Guo, Richard Ren,
+  Alexander Pan, Xuwang Yin, Mantas Mazeika, Ann-Kathrin Dombrowski, Shashwat
+  Goel, Nathaniel Li, Michael~J Byun, Zifan Wang, Alex Mallen, Steven Basart,
+  Sanmi Koyber, Dawn Song, Matt Fredrikson, J~Zico Kolter, and Dan Hendrycks.
+\newblock Representation engineering: A top-down approach to {AI} transparency.
+\newblock \emph{arXiv preprint arXiv:2310.01405}, 2023.
+
+\end{thebibliography}

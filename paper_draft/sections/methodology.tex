@@ -1,0 +1,86 @@
+\section{Methodology}
+\label{sec:methodology}
+
+We measure the effective rank of humor recognition through three complementary methods: rank-constrained linear probing, mean difference probing, and \lora fine-tuning at varying adapter ranks. We apply each method under controlled experimental conditions designed to disentangle humor detection from text-style detection.
+
+\subsection{Models}
+\label{sec:models}
+
+We use two autoregressive language models:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+\item \gpttwo \citep{radford2019language}: 124M parameters, 12 layers, hidden dimension 768. Our primary model, chosen for its extensive use in mechanistic interpretability research \citep{tigges2023linear, marks2023geometry, nanda2023emergent}.
+\item \pythia \citep{biderman2023pythia}: 410M parameters, 24 layers, hidden dimension 1024. Used to test whether humor rank changes with model scale.
+\end{itemize}
+
+\subsection{Datasets}
+\label{sec:datasets}
+
+We construct five experimental conditions spanning two difficulty levels (\tabref{tab:datasets}).
+
+\para{Easy task (humor style).}
+We contrast short jokes from the Kaggle \shortjokes dataset with hand-crafted factual sentences (\eg ``The speed of light is approximately 299,792 kilometers per second''). Jokes are filtered to 10--200 characters to reduce trivial length cues. This condition tests whether the model linearly separates joke-style text from non-joke text.
+
+\para{Hard tasks (humor quality).}
+We design two conditions that control for text register. In \textbf{Hard-1}, we contrast \shortjokes with low-scoring Reddit jokes (score $\leq$ 2)---both are attempts at humor, differing only in quality. In \textbf{Hard-2}, we contrast high-scoring Reddit jokes (score $\geq$ 50) with low-scoring ones. These conditions test whether the model represents humor \emph{quality} rather than humor \emph{style}.
+
+\para{Sentiment baseline.}
+We probe \ssttwo sentiment (positive vs.\ negative movie reviews) as a calibration benchmark, since sentiment is known to be rank-1 \citep{tigges2023linear}.
+
+All datasets are balanced 50/50 between classes, filtered by character length (20--200), and split with a fixed seed of 42 for reproducibility.
+
+\begin{table}[t]
+    \centering
+    \caption{Dataset conditions. All conditions are class-balanced. Reddit jokes are filtered to remove \texttt{[deleted]} posts.}
+    \label{tab:datasets}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llllr@{}}
+        \toprule
+        Condition & Positive & Negative & Source & $N_{\text{train}}$ / $N_{\text{test}}$ \\
+        \midrule
+        Easy & Short jokes & Factual sentences & Kaggle + manual & 1,200 / 400 \\
+        Hard-1 & Short jokes & Low-score Reddit & HuggingFace & 1,000 / 300 \\
+        Hard-2 & High-score Reddit & Low-score Reddit & HuggingFace & 1,000 / 300 \\
+        Sentiment & \ssttwo positive & \ssttwo negative & HuggingFace & 1,000 / 300 \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\subsection{Activation Extraction}
+\label{sec:activation_extraction}
+
+For each input text, we perform a forward pass through the model and extract the hidden state $\vh_\ell \in \R^d$ at the last non-padding token position for every layer $\ell \in \{0, 1, \ldots, L\}$, where $L$ is the number of transformer layers and layer 0 denotes the embedding layer output. We collect activations for all training and test examples, yielding activation matrices $\mH_\ell^+ \in \R^{n \times d}$ (positive class) and $\mH_\ell^- \in \R^{n \times d}$ (negative class) at each layer.
+
+\subsection{Rank-Constrained Linear Probing}
+\label{sec:probing}
+
+To measure classification accuracy as a function of representation rank, we apply PCA dimensionality reduction before logistic regression. For a given rank $k$ and layer $\ell$:
+\begin{enumerate}[leftmargin=*,itemsep=0pt,topsep=0pt]
+\item Standardize activations (zero mean, unit variance per feature).
+\item Fit PCA with $k$ components on training activations.
+\item Transform both training and test activations to $k$ dimensions.
+\item Train logistic regression on the $k$-dimensional training set.
+\item Evaluate accuracy on the $k$-dimensional test set.
+\end{enumerate}
+We sweep $k \in \{1, 2, 4, 8, 16, 32, 64, d\}$ and $\ell \in \{0, \ldots, L\}$, yielding an accuracy surface over rank and layer. If humor is rank-$r$, accuracy should saturate at $k = r$.
+
+\subsection{Mean Difference Probe}
+\label{sec:mean_diff}
+
+Following \citet{tigges2023linear}, we compute the rank-1 humor direction as the unit vector between class centroids:
+\begin{equation}
+    \vd_\ell = \frac{\bar{\vh}_\ell^+ - \bar{\vh}_\ell^-}{\|\bar{\vh}_\ell^+ - \bar{\vh}_\ell^-\|}
+\end{equation}
+where $\bar{\vh}_\ell^+$ and $\bar{\vh}_\ell^-$ are the mean activations for the positive and negative classes at layer $\ell$. We classify test examples by projecting onto $\vd_\ell$ and thresholding at the median projection value. This provides a direct rank-1 accuracy measure that is independent of probe capacity.
+
+\subsection{LoRA Fine-Tuning}
+\label{sec:lora}
+
+We fine-tune \gpttwo with \lora adapters \citep{hu2021lora} injected into the attention projection matrices (\texttt{c\_attn}, \texttt{c\_proj}) and add a binary classification head on top of the last token's hidden state. We sweep adapter rank $r \in \{0, 1, 2, 4, 8, 16, 32\}$, where $r = 0$ corresponds to training only the classification head (1,536 parameters) with the base model frozen. All experiments use learning rate $2 \times 10^{-4}$, batch size 32, and 5 training epochs.
+
+The \lora rank at which accuracy saturates provides a complementary measure of humor recognition dimensionality: if the weight updates needed for humor detection are rank-$r$, then \lora at rank $r$ should suffice.
+
+\subsection{Evaluation}
+\label{sec:evaluation}
+
+We report classification accuracy on held-out test sets. All experiments use a fixed random seed (42) for reproducibility. We identify the \emph{best layer} for each condition (the layer maximizing test accuracy at the best rank) and report accuracy across ranks at that layer, as well as the best rank-1 accuracy across all layers.

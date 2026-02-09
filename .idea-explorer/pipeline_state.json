@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-02-09T22:01:26.655535",
+  "stages": {
+    "resource_finder": {
+      "status": "completed",
+      "started_at": "2026-02-09T22:01:26.655937",
+      "completed_at": "2026-02-09T22:34:00.357713",
+      "success": true,
+      "outputs": {
+        "literature_review": "/workspaces/humor-recognition-llm-ca34-claude/literature_review.md",
+        "resources_catalog": "/workspaces/humor-recognition-llm-ca34-claude/resources.md",
+        "papers_dir": "/workspaces/humor-recognition-llm-ca34-claude/papers",
+        "datasets_dir": "/workspaces/humor-recognition-llm-ca34-claude/datasets",
+        "code_dir": "/workspaces/humor-recognition-llm-ca34-claude/code"
+      }
+    },
+    "experiment_runner": {
+      "status": "completed",
+      "started_at": "2026-02-09T22:34:00.358191",
+      "completed_at": "2026-02-09T23:18:02.929486",
+      "success": true,
+      "outputs": {
+        "success": true,
+        "return_code": 0,
+        "elapsed_time": 2642.5551147460938,
+        "log_file": "/workspaces/humor-recognition-llm-ca34-claude/logs/execution_claude.log",
+        "transcript_file": "/workspaces/humor-recognition-llm-ca34-claude/logs/execution_claude_transcript.jsonl"
+      }
+    }
+  },
+  "current_stage": null,
+  "completed": true,
+  "completed_at": "2026-02-09T23:18:02.930211"
+}
