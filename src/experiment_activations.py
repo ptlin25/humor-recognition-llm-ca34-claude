@@ -1,7 +1,7 @@
 """
 Experiment 1 & 2: Activation collection, PCA analysis, and linear probing.
 
-Extracts hidden representations from GPT-2 for humor/non-humor texts,
+Extracts hidden representations from Gemma-3-4b-it for humor/non-humor texts,
 analyzes the singular value spectrum, and trains linear probes at varying ranks.
 """
 import json
@@ -256,8 +256,8 @@ def run_experiment():
     print(f"\nDataset: train={len(train_texts)}, val={len(val_texts)}, test={len(test_texts)}")
 
     # Load model
-    print("\nLoading GPT-2 small...")
-    model_name = "gpt2"
+    print("\nLoading Gemma-3-4b-it...")
+    model_name = "google/gemma-3-4b-it"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True)

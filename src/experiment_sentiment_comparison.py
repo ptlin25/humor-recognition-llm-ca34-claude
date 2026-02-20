@@ -178,7 +178,7 @@ def run_sentiment_comparison():
     print(f"Sentiment data: train={len(train_texts)}, test={len(test_texts)}")
 
     # Load model
-    model_name = "gpt2"
+    model_name = "google/gemma-3-4b-it"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True)

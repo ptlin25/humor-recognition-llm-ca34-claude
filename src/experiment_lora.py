@@ -1,7 +1,7 @@
 """
 Experiment 3: LoRA fine-tuning at varying ranks for humor detection.
 
-Fine-tunes GPT-2 with LoRA adapters at different ranks to measure
+Fine-tunes Gemma-3-4b-it with LoRA adapters at different ranks to measure
 the minimum rank needed for humor classification.
 """
 import json
@@ -77,31 +77,20 @@ class LoRALinear(nn.Module):
         return original_out + lora_out
 
 
-def apply_lora(model, rank, target_modules=["c_attn", "c_proj"]):
-    """Apply LoRA to specified modules in the model."""
+def apply_lora(model, rank, target_modules=["q_proj", "v_proj"]):
+    """Apply LoRA to specified modules in the model (Gemma uses Linear layers)."""
     lora_params = []
     for name, module in model.named_modules():
         if any(target in name for target in target_modules):
-            if isinstance(module, nn.Linear) or (hasattr(module, 'weight') and len(module.weight.shape) == 2):
-                # For GPT-2's Conv1D layers, wrap them
+            if isinstance(module, nn.Linear):
+                # Gemma uses standard Linear layers
                 parent_name = ".".join(name.split(".")[:-1])
                 child_name = name.split(".")[-1]
                 parent = model
                 for part in parent_name.split("."):
                     if part:
                         parent = getattr(parent, part)
-                if hasattr(module, 'nf'):  # Conv1D
-                    # Create equivalent linear
-                    in_f = module.weight.shape[0]
-                    out_f = module.weight.shape[1]
-                    linear = nn.Linear(in_f, out_f, bias=module.bias is not None)
-                    linear.weight.data = module.weight.data.t()
-                    if module.bias is not None:
-                        linear.bias.data = module.bias.data
-                    linear = linear.to(module.weight.device)
-                    lora_layer = LoRALinear(linear, rank).to(module.weight.device)
-                else:
-                    lora_layer = LoRALinear(module, rank).to(next(module.parameters()).device)
+                lora_layer = LoRALinear(module, rank).to(next(module.parameters()).device)
                 setattr(parent, child_name, lora_layer)
                 lora_params.extend([lora_layer.lora_A, lora_layer.lora_B])
 
@@ -109,12 +98,12 @@ def apply_lora(model, rank, target_modules=["c_attn", "c_proj"]):
 
 
 def train_lora_model(rank, train_dataset, val_dataset, n_epochs=3, lr=1e-3, batch_size=32):
-    """Train a GPT-2 model with LoRA at a specific rank."""
-    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    """Train a Gemma-3-4b-it model with LoRA at a specific rank."""
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
     tokenizer.pad_token = tokenizer.eos_token
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "gpt2", num_labels=2
+        "google/gemma-3-4b-it", num_labels=2
     )
     model.config.pad_token_id = tokenizer.eos_token_id
     model = model.to(DEVICE)
@@ -203,7 +192,7 @@ def run_lora_experiment():
     with open(data_path) as f:
         data = json.load(f)
 
-    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
     tokenizer.pad_token = tokenizer.eos_token
 
     train_dataset = TextClassificationDataset(

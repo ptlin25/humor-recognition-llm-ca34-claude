@@ -30,7 +30,7 @@ def load_json(path):
 
 
 def plot_figure1_main_results():
-    """Figure 1: Main results - PCA spectrum and probing (easy task, GPT-2)."""
+    """Figure 1: Main results - PCA spectrum and probing (easy task, Gemma-3-1b-it)."""
     data = load_json(RESULTS_DIR / "activation_analysis_results.json")
     pca_results = data["pca_results"]
 
@@ -45,7 +45,7 @@ def plot_figure1_main_results():
     ax.bar(range(1, len(var)+1), var, color=colors)
     ax.set_xlabel("Principal Component")
     ax.set_ylabel("Explained Variance Ratio")
-    ax.set_title(f"A) Singular Value Spectrum\n(GPT-2, Layer {best_layer})")
+    ax.set_title(f"A) Singular Value Spectrum\n(Gemma-3-1b-it, Layer {best_layer})")
     ax.set_yscale("log")
     ax.grid(True, alpha=0.3, axis="y")
 
@@ -119,7 +119,7 @@ def plot_figure1_main_results():
         ax.annotate(f"{a:.3f}", (r, a), textcoords="offset points",
                     xytext=(5, 5), fontsize=7)
 
-    plt.suptitle("Figure 1: Humor Recognition Rank Analysis (GPT-2 Small, Jokes vs. Factual Text)",
+    plt.suptitle("Figure 1: Humor Recognition Rank Analysis (Gemma-3-1b-it, Jokes vs. Factual Text)",
                  fontsize=14, fontweight="bold", y=1.02)
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure1_main_results.png", bbox_inches="tight")
@@ -175,7 +175,7 @@ def plot_figure2_hard_tasks():
         ax.legend(fontsize=7, loc="upper left")
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle("Figure 2: Humor Detection with Controlled Confounds (GPT-2 Small)",
+    plt.suptitle("Figure 2: Humor Detection with Controlled Confounds (Gemma-3-1b-it)",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure2_hard_tasks.png", bbox_inches="tight")
@@ -244,37 +244,37 @@ def plot_figure3_comparison():
 
 
 def plot_figure4_pythia():
-    """Figure 4: Cross-model comparison (GPT-2 vs Pythia-410M)."""
-    gpt2 = load_json(RESULTS_DIR / "activation_analysis_results.json")
+    """Figure 4: Cross-model comparison (Gemma-3-1b-it vs Pythia-410M)."""
+    gemma = load_json(RESULTS_DIR / "activation_analysis_results.json")
     pythia = load_json(RESULTS_DIR / "pythia_results.json")
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     # Panel A: Mean diff accuracy
     ax = axes[0]
-    gpt2_md = [r["accuracy"] for r in gpt2["mean_diff_results"]]
+    gemma_md = [r["accuracy"] for r in gemma["mean_diff_results"]]
     pythia_md = [r["mean_diff_acc"] for r in pythia["probe_results"]]
-    gpt2_layers = np.linspace(0, 1, len(gpt2_md))
+    gemma_layers = np.linspace(0, 1, len(gemma_md))
     pythia_layers = np.linspace(0, 1, len(pythia_md))
-    ax.plot(gpt2_layers, gpt2_md, "o-", color="blue", label=f"GPT-2 (124M, {len(gpt2_md)-1}L)", markersize=5)
+    ax.plot(gemma_layers, gemma_md, "o-", color="blue", label=f"Gemma-3-1b-it (1B, {len(gemma_md)-1}L)", markersize=5)
     ax.plot(pythia_layers, pythia_md, "s-", color="red", label=f"Pythia-410M ({len(pythia_md)-1}L)", markersize=4)
     ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.5)
     ax.set_xlabel("Normalized Layer Position")
     ax.set_ylabel("Rank-1 Probe Accuracy")
-    ax.set_title("A) Rank-1 Probe: GPT-2 vs Pythia-410M")
+    ax.set_title("A) Rank-1 Probe: Gemma-3-1b-it vs Pythia-410M")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
     # Panel B: Best probe accuracy
     ax = axes[1]
-    gpt2_best = [max(r["accuracy"] for r in pr["results_by_rank"]) for pr in gpt2["probe_results"]]
+    gemma_best = [max(r["accuracy"] for r in pr["results_by_rank"]) for pr in gemma["probe_results"]]
     pythia_best = [max(p["accuracy"] for p in pr["probes"]) for pr in pythia["probe_results"]]
-    ax.plot(gpt2_layers, gpt2_best, "o-", color="blue", label="GPT-2 (124M)", markersize=5)
+    ax.plot(gemma_layers, gemma_best, "o-", color="blue", label="Gemma-3-1b-it (1B)", markersize=5)
     ax.plot(pythia_layers, pythia_best, "s-", color="red", label="Pythia-410M", markersize=4)
     ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.5)
     ax.set_xlabel("Normalized Layer Position")
     ax.set_ylabel("Best Probe Accuracy")
-    ax.set_title("B) Best Probe: GPT-2 vs Pythia-410M")
+    ax.set_title("B) Best Probe: Gemma-3-1b-it vs Pythia-410M")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -321,7 +321,7 @@ def plot_figure5_lora_detail():
     for p, a, r in zip(params, accs, ranks):
         ax.annotate(f"r={r}", (p, a), textcoords="offset points", xytext=(8, -5), fontsize=8)
 
-    plt.suptitle("Figure 5: LoRA Fine-tuning for Humor Detection (GPT-2, Jokes vs. Factual)",
+    plt.suptitle("Figure 5: LoRA Fine-tuning for Humor Detection (Gemma-3-1b-it, Jokes vs. Factual)",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure5_lora_detail.png", bbox_inches="tight")
