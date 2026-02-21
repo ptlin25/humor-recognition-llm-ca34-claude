@@ -191,6 +191,27 @@ def prepare_dataset(n_humor=2000, n_non_humor=2000, val_frac=0.2, test_frac=0.2)
     }
 
 
+def load_hahackathon(split="train"):
+    """Load HaHackathon (SemEval 2021 Task 7) from local CSV.
+
+    Expects datasets/hahackathon/{train,dev}.csv with columns:
+      id, text, is_humor, humor_rating, humor_controversy, offense_rating
+    Returns: (texts: list[str], labels: list[int])  labels: 1=humor, 0=not
+    """
+    import csv
+    path = PROJECT_ROOT / "datasets" / "hahackathon" / f"{split}.csv"
+    texts, labels = [], []
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            text = row["text"].strip()
+            label = int(row["is_humor"])
+            if text:
+                texts.append(text)
+                labels.append(label)
+    return texts, labels
+
+
 if __name__ == "__main__":
     data = prepare_dataset()
     # Save for later use

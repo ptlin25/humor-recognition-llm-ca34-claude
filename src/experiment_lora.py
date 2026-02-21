@@ -1,7 +1,7 @@
 """
 Experiment 3: LoRA fine-tuning at varying ranks for humor detection.
 
-Fine-tunes Gemma-3-4b-it with LoRA adapters at different ranks to measure
+Fine-tunes Gemma-3-1b with LoRA adapters at different ranks to measure
 the minimum rank needed for humor classification.
 """
 import json
@@ -39,6 +39,12 @@ class TextClassificationDataset(Dataset):
             texts, truncation=True, padding="max_length",
             max_length=max_length, return_tensors="pt"
         )
+        # Gemma tokenizer doesn't produce token_type_ids; supply zeros so the
+        # model's forward() signature check doesn't raise during training.
+        if "token_type_ids" not in self.encodings:
+            self.encodings["token_type_ids"] = torch.zeros_like(
+                self.encodings["input_ids"]
+            )
         self.labels = torch.tensor(labels, dtype=torch.long)
 
     def __len__(self):
@@ -48,6 +54,7 @@ class TextClassificationDataset(Dataset):
         return {
             "input_ids": self.encodings["input_ids"][idx],
             "attention_mask": self.encodings["attention_mask"][idx],
+            "token_type_ids": self.encodings["token_type_ids"][idx],
             "labels": self.labels[idx],
         }
 
@@ -65,9 +72,10 @@ class LoRALinear(nn.Module):
         for p in self.original.parameters():
             p.requires_grad = False
 
-        # LoRA matrices
-        self.lora_A = nn.Parameter(torch.randn(in_features, rank) * 0.01)
-        self.lora_B = nn.Parameter(torch.zeros(rank, out_features))
+        # LoRA matrices — match dtype of the wrapped layer so bfloat16 models work
+        dtype = original_linear.weight.dtype
+        self.lora_A = nn.Parameter(torch.randn(in_features, rank, dtype=dtype) * 0.01)
+        self.lora_B = nn.Parameter(torch.zeros(rank, out_features, dtype=dtype))
         self.alpha = alpha
         self.scaling = alpha / rank
 
@@ -98,12 +106,12 @@ def apply_lora(model, rank, target_modules=["q_proj", "v_proj"]):
 
 
 def train_lora_model(rank, train_dataset, val_dataset, n_epochs=3, lr=1e-3, batch_size=32):
-    """Train a Gemma-3-4b-it model with LoRA at a specific rank."""
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+    """Train a Gemma-3-1b model with LoRA at a specific rank."""
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-pt")
     tokenizer.pad_token = tokenizer.eos_token
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "google/gemma-3-4b-it", num_labels=2
+        "google/gemma-3-1b-pt", num_labels=2, torch_dtype=torch.bfloat16
     )
     model.config.pad_token_id = tokenizer.eos_token_id
     model = model.to(DEVICE)
@@ -192,7 +200,7 @@ def run_lora_experiment():
     with open(data_path) as f:
         data = json.load(f)
 
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-pt")
     tokenizer.pad_token = tokenizer.eos_token
 
     train_dataset = TextClassificationDataset(
@@ -216,7 +224,7 @@ def run_lora_experiment():
         t0 = time.time()
         result = train_lora_model(
             rank, train_dataset, val_dataset,
-            n_epochs=5, lr=2e-4, batch_size=32
+            n_epochs=5, lr=2e-4, batch_size=4
         )
         elapsed = time.time() - t0
         result["time_seconds"] = elapsed

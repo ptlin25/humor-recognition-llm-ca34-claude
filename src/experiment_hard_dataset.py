@@ -111,7 +111,7 @@ def extract_activations(model, tokenizer, texts, batch_size=64, max_length=128):
             batch_acts = []
             for b in range(hidden_state.shape[0]):
                 pos = last_token_pos[b].item()
-                batch_acts.append(hidden_state[b, pos, :].cpu().numpy())
+                batch_acts.append(hidden_state[b, pos, :].float().cpu().numpy())
             all_activations[layer_idx].append(np.stack(batch_acts))
 
     for layer in all_activations:
@@ -129,7 +129,7 @@ def probe_at_ranks(train_acts, train_labels, test_acts, test_labels, ranks=[1,2,
     results = []
 
     # Full rank
-    lr = LogisticRegression(max_iter=1000, random_state=SEED)
+    lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
     lr.fit(train_s, train_labels)
     full_acc = accuracy_score(test_labels, lr.predict(test_s))
 
@@ -139,7 +139,7 @@ def probe_at_ranks(train_acts, train_labels, test_acts, test_labels, ranks=[1,2,
         pca = PCA(n_components=rank, random_state=SEED)
         tr = pca.fit_transform(train_s)
         te = pca.transform(test_s)
-        lr = LogisticRegression(max_iter=1000, random_state=SEED)
+        lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
         lr.fit(tr, train_labels)
         acc = accuracy_score(test_labels, lr.predict(te))
         f1 = f1_score(test_labels, lr.predict(te))
@@ -196,12 +196,16 @@ def run_hard_experiments():
     sst_pos, sst_neg = load_sentiment_data()
 
     # Load model
-    model_name = "google/gemma-3-4b-it"
+    model_name = "google/gemma-3-1b-pt"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True)
+    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True, torch_dtype=torch.bfloat16)
     model = model.to(DEVICE)
     model.eval()
+    # Gemma 3 nests architecture attrs under text_config; promote them for uniform access
+    if not hasattr(model.config, "hidden_size") and hasattr(model.config, "text_config"):
+        model.config.hidden_size = model.config.text_config.hidden_size
+        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     results = {}
 

@@ -1,0 +1,958 @@
+{
+  "model": "EleutherAI/pythia-410m",
+  "hidden_size": 1024,
+  "n_layers": 24,
+  "probe_results": [
+    {
+      "layer": 0,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.75625
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.75875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.75875
+        }
+      ],
+      "mean_diff_acc": 0.75875
+    },
+    {
+      "layer": 1,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.93125
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.93875
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.92875
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.98375
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99
+        }
+      ],
+      "mean_diff_acc": 0.92125
+    },
+    {
+      "layer": 2,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.88625
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.9375
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.93625
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.98
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.9975
+        }
+      ],
+      "mean_diff_acc": 0.87375
+    },
+    {
+      "layer": 3,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.88
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.94875
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.96375
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.98625
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99625
+        }
+      ],
+      "mean_diff_acc": 0.865
+    },
+    {
+      "layer": 4,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.94875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.975
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.98
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.985
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.9975
+        }
+      ],
+      "mean_diff_acc": 0.9
+    },
+    {
+      "layer": 5,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.97875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.98625
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9875
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99625
+        }
+      ],
+      "mean_diff_acc": 0.97125
+    },
+    {
+      "layer": 6,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.9925
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.9925
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99375
+    },
+    {
+      "layer": 7,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 1.0
+        }
+      ],
+      "mean_diff_acc": 0.995
+    },
+    {
+      "layer": 8,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99625
+    },
+    {
+      "layer": 9,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.98875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.9925
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.9975
+        }
+      ],
+      "mean_diff_acc": 0.99125
+    },
+    {
+      "layer": 10,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99375
+    },
+    {
+      "layer": 11,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 8,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.9975
+    },
+    {
+      "layer": 12,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.9975
+    },
+    {
+      "layer": 13,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99625
+    },
+    {
+      "layer": 14,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.9875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.995
+    },
+    {
+      "layer": 15,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.9975
+    },
+    {
+      "layer": 16,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99875
+    },
+    {
+      "layer": 17,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99875
+    },
+    {
+      "layer": 18,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99875
+    },
+    {
+      "layer": 19,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 4,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 32,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 1.0
+        }
+      ],
+      "mean_diff_acc": 0.99875
+    },
+    {
+      "layer": 20,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.97875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 4,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 8,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 16,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 32,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 1.0
+    },
+    {
+      "layer": 21,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.9825
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.98375
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.99625
+        },
+        {
+          "rank": 8,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 16,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.995
+    },
+    {
+      "layer": 22,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.84875
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.99375
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 32,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.98625
+    },
+    {
+      "layer": 23,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.985
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.995
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 16,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 32,
+          "accuracy": 1.0
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.9975
+    },
+    {
+      "layer": 24,
+      "probes": [
+        {
+          "rank": 1,
+          "accuracy": 0.99125
+        },
+        {
+          "rank": 2,
+          "accuracy": 0.98625
+        },
+        {
+          "rank": 4,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 8,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 16,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 32,
+          "accuracy": 0.9975
+        },
+        {
+          "rank": 64,
+          "accuracy": 0.99875
+        },
+        {
+          "rank": 1024,
+          "accuracy": 0.99875
+        }
+      ],
+      "mean_diff_acc": 0.99
+    }
+  ],
+  "mean_diff_results": []
+}

@@ -1,7 +1,7 @@
 """
 Experiment 1 & 2: Activation collection, PCA analysis, and linear probing.
 
-Extracts hidden representations from Gemma-3-4b-it for humor/non-humor texts,
+Extracts hidden representations from Gemma-3-1b for humor/non-humor texts,
 analyzes the singular value spectrum, and trains linear probes at varying ranks.
 """
 import json
@@ -78,7 +78,7 @@ def extract_activations(model, tokenizer, texts, batch_size=32, max_length=128):
             batch_acts = []
             for b in range(hidden_state.shape[0]):
                 pos = last_token_pos[b].item()
-                batch_acts.append(hidden_state[b, pos, :].cpu().numpy())
+                batch_acts.append(hidden_state[b, pos, :].float().cpu().numpy())
             all_activations[layer_idx].append(np.stack(batch_acts))
 
     # Concatenate all batches
@@ -145,7 +145,7 @@ def pca_analysis(humor_acts, non_humor_acts, layer_idx, results_dir):
     projected_all = pca.transform(all_acts_centered)
     for k in range(1, min(51, n_components + 1)):
         projected = projected_all[:, :k]
-        lr = LogisticRegression(max_iter=1000, random_state=SEED)
+        lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
         lr.fit(projected[train_idx], labels[train_idx])
         preds = lr.predict(projected[test_idx])
         acc = accuracy_score(labels[test_idx], preds)
@@ -174,7 +174,7 @@ def linear_probe_varying_rank(train_acts, train_labels, test_acts, test_labels,
     results = []
 
     # Full rank baseline
-    lr_full = LogisticRegression(max_iter=1000, random_state=SEED)
+    lr_full = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
     lr_full.fit(train_scaled, train_labels)
     full_acc = accuracy_score(test_labels, lr_full.predict(test_scaled))
     full_f1 = f1_score(test_labels, lr_full.predict(test_scaled))
@@ -187,7 +187,7 @@ def linear_probe_varying_rank(train_acts, train_labels, test_acts, test_labels,
         train_reduced = pca.fit_transform(train_scaled)
         test_reduced = pca.transform(test_scaled)
 
-        lr = LogisticRegression(max_iter=1000, random_state=SEED)
+        lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
         lr.fit(train_reduced, train_labels)
         preds = lr.predict(test_reduced)
         acc = accuracy_score(test_labels, preds)
@@ -256,13 +256,17 @@ def run_experiment():
     print(f"\nDataset: train={len(train_texts)}, val={len(val_texts)}, test={len(test_texts)}")
 
     # Load model
-    print("\nLoading Gemma-3-4b-it...")
-    model_name = "google/gemma-3-4b-it"
+    print("\nLoading Gemma-3-1b-pt...")
+    model_name = "google/gemma-3-1b-pt"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True)
+    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True, torch_dtype=torch.bfloat16)
     model = model.to(DEVICE)
     model.eval()
+    # Gemma 3 nests architecture attrs under text_config; promote them for uniform access
+    if not hasattr(model.config, "hidden_size") and hasattr(model.config, "text_config"):
+        model.config.hidden_size = model.config.text_config.hidden_size
+        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     print(f"Model: {model_name}, Device: {DEVICE}")
     print(f"Hidden size: {model.config.hidden_size}, Layers: {model.config.num_hidden_layers}")
@@ -288,7 +292,6 @@ def run_experiment():
 
     # Per-layer analysis
     train_labels_np = np.array(train_labels)
-    test_labels_np = np.array(test_labels)
 
     print("\n--- Per-layer PCA & Probing Analysis ---")
     for layer_idx in range(model.config.num_hidden_layers + 1):

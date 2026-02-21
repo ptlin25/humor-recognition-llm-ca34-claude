@@ -1,6 +1,7 @@
 """
-Experiment: Repeat core analysis with Pythia-410M to test scale effects.
-Also includes the original easy task (jokes vs factual) for comparison.
+Experiment: Repeat core analysis with GPT-2 (117M) for cross-model comparison.
+Uses the same easy task (jokes vs factual) as Gemma to compare how model
+architecture and scale affect humor representation rank.
 """
 import json
 import sys
@@ -69,12 +70,12 @@ def probe_at_ranks(train_acts, train_labels, test_acts, test_labels, ranks=[1,2,
         pca = PCA(n_components=rank, random_state=SEED)
         tr = pca.fit_transform(train_s)
         te = pca.transform(test_s)
-        lr = LogisticRegression(max_iter=1000, random_state=SEED)
+        lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
         lr.fit(tr, train_labels)
         acc = accuracy_score(test_labels, lr.predict(te))
         results.append({"rank": rank, "accuracy": float(acc)})
     # Full rank
-    lr = LogisticRegression(max_iter=1000, random_state=SEED)
+    lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
     lr.fit(train_s, train_labels)
     results.append({"rank": train_s.shape[1], "accuracy": float(accuracy_score(test_labels, lr.predict(test_s)))})
     return results
@@ -95,14 +96,14 @@ def run_pythia_experiment():
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     print("=" * 60)
-    print("EXPERIMENT: Pythia-410M Scale Comparison")
+    print("EXPERIMENT: GPT-2 Cross-Model Comparison")
     print("=" * 60)
 
     # Load prepared data (jokes vs factual)
     with open(PROJECT_ROOT / "results" / "prepared_data.json") as f:
         data = json.load(f)
 
-    model_name = "EleutherAI/pythia-410m"
+    model_name = "gpt2"
     print(f"\nLoading {model_name}...")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
@@ -133,7 +134,7 @@ def run_pythia_experiment():
         print(f"  Layer {layer:2d}: md_acc={md:.3f}, r1={probes[0]['accuracy']:.3f}, "
               f"best_rank={best['rank']}(acc={best['accuracy']:.3f})")
 
-    output_path = PROJECT_ROOT / "results" / "pythia_results.json"
+    output_path = PROJECT_ROOT / "results" / "gpt2_results.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"\nResults saved to {output_path}")
