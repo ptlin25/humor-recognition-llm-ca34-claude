@@ -4,12 +4,11 @@ Quickstart
 ----------
 1. pip install modal
 2. modal setup                                          # authenticate
-3. modal secret create huggingface HF_TOKEN=<token>    # for Gemma (gated model)
-4. modal run modal_run.py                              # full pipeline
+3. modal run modal_run.py                              # full pipeline
    modal run modal_run.py::main --experiment activations  # single experiment
 
 Available --experiment values:
-  all | data | activations | lora | sentiment | hard | gpt2 | generalization | visualize
+  all | data | activations | lora | sentiment | hard | pythia | visualize
 
 Results are stored in Modal volume "humor-experiments".
 Download with:
@@ -33,10 +32,6 @@ app = modal.App("humor-recognition")
 volume = modal.Volume.from_name("humor-experiments", create_if_missing=True)
 VOLUME_PATH = "/data"
 
-# HuggingFace token — required to access google/gemma-3-4b-it (gated model)
-# Create with: modal secret create huggingface HF_TOKEN=<your_token>
-hf_secret = modal.Secret.from_name("huggingface")
-
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
@@ -54,7 +49,7 @@ image = (
     .add_local_dir("src", remote_path="/project/src")
 )
 
-GPU = "A10G"  # 24 GB VRAM — sufficient for Gemma-3-1b in bfloat16
+GPU = "T4"  # sufficient for GPT-2 and Pythia-410M
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +124,7 @@ def run_data_preparation():
 
 @app.function(
     image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
-    secrets=[hf_secret], timeout=7200,
+timeout=7200,
 )
 def run_activations():
     _setup()
@@ -140,7 +135,7 @@ def run_activations():
 
 @app.function(
     image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
-    secrets=[hf_secret], timeout=14400,
+timeout=14400,
 )
 def run_lora():
     _setup()
@@ -151,7 +146,7 @@ def run_lora():
 
 @app.function(
     image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
-    secrets=[hf_secret], timeout=7200,
+timeout=7200,
 )
 def run_sentiment():
     _setup()
@@ -162,7 +157,7 @@ def run_sentiment():
 
 @app.function(
     image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
-    secrets=[hf_secret], timeout=7200,
+timeout=7200,
 )
 def run_hard():
     _setup()
@@ -175,21 +170,10 @@ def run_hard():
     image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
     timeout=3600,
 )
-def run_gpt2():
+def run_pythia():
     _setup()
-    from experiment_gpt2 import run_pythia_experiment
+    from experiment_pythia import run_pythia_experiment
     run_pythia_experiment()
-    volume.commit()
-
-
-@app.function(
-    image=image, gpu=GPU, volumes={VOLUME_PATH: volume},
-    secrets=[hf_secret], timeout=10800,
-)
-def run_generalization():
-    _setup()
-    from experiment_generalization import run_generalization
-    run_generalization()
     volume.commit()
 
 
@@ -202,7 +186,6 @@ def run_visualize():
     visualize_all.plot_figure3_comparison()
     visualize_all.plot_figure4_pythia()
     visualize_all.plot_figure5_lora_detail()
-    visualize_all.plot_figure6_generalization()
     volume.commit()
     print("All figures saved to results/plots/.")
 
@@ -217,7 +200,7 @@ def main(experiment: str = "all", skip_upload: bool = False):
 
     Args:
         experiment:   all | data | activations | lora | sentiment |
-                      hard | gpt2 | generalization | visualize
+                      hard | pythia | visualize
         skip_upload:  Skip uploading datasets/ to the volume.
                       Safe to use after the first run.
     """
@@ -240,14 +223,13 @@ def main(experiment: str = "all", skip_upload: bool = False):
             print("Upload complete.\n")
 
     steps = {
-        "data":           run_data_preparation,
-        "activations":    run_activations,
-        "lora":           run_lora,
-        "sentiment":      run_sentiment,
-        "hard":           run_hard,
-        "gpt2":           run_gpt2,
-        "generalization": run_generalization,
-        "visualize":      run_visualize,
+        "data":        run_data_preparation,
+        "activations": run_activations,
+        "lora":        run_lora,
+        "sentiment":   run_sentiment,
+        "hard":        run_hard,
+        "pythia":      run_pythia,
+        "visualize":   run_visualize,
     }
     pipeline = list(steps.keys()) if experiment == "all" else [experiment]
 

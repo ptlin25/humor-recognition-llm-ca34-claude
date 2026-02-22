@@ -1,7 +1,7 @@
 """
 Experiment 3: LoRA fine-tuning at varying ranks for humor detection.
 
-Fine-tunes Gemma-3-1b with LoRA adapters at different ranks to measure
+Fine-tunes GPT-2 with LoRA adapters at different ranks to measure
 the minimum rank needed for humor classification.
 """
 import json
@@ -39,7 +39,7 @@ class TextClassificationDataset(Dataset):
             texts, truncation=True, padding="max_length",
             max_length=max_length, return_tensors="pt"
         )
-        # Gemma tokenizer doesn't produce token_type_ids; supply zeros so the
+        # GPT-2 tokenizer doesn't produce token_type_ids; supply zeros so the
         # model's forward() signature check doesn't raise during training.
         if "token_type_ids" not in self.encodings:
             self.encodings["token_type_ids"] = torch.zeros_like(
@@ -65,14 +65,19 @@ class LoRALinear(nn.Module):
         super().__init__()
         self.original = original_linear
         self.rank = rank
-        in_features = original_linear.in_features
-        out_features = original_linear.out_features
+        # Support both nn.Linear (has .in_features/.out_features) and
+        # transformers Conv1D (weight shape is (in, out) — transposed vs Linear)
+        if hasattr(original_linear, 'in_features'):
+            in_features = original_linear.in_features
+            out_features = original_linear.out_features
+        else:
+            in_features = original_linear.weight.shape[0]
+            out_features = original_linear.weight.shape[1]
 
         # Freeze original weights
         for p in self.original.parameters():
             p.requires_grad = False
 
-        # LoRA matrices — match dtype of the wrapped layer so bfloat16 models work
         dtype = original_linear.weight.dtype
         self.lora_A = nn.Parameter(torch.randn(in_features, rank, dtype=dtype) * 0.01)
         self.lora_B = nn.Parameter(torch.zeros(rank, out_features, dtype=dtype))
@@ -85,13 +90,17 @@ class LoRALinear(nn.Module):
         return original_out + lora_out
 
 
-def apply_lora(model, rank, target_modules=["q_proj", "v_proj"]):
-    """Apply LoRA to specified modules in the model (Gemma uses Linear layers)."""
+def apply_lora(model, rank, target_modules=["c_attn", "c_proj"]):
+    """Apply LoRA to specified modules in the model.
+    Handles both nn.Linear and transformers Conv1D (used by GPT-2 attention).
+    """
     lora_params = []
     for name, module in model.named_modules():
         if any(target in name for target in target_modules):
-            if isinstance(module, nn.Linear):
-                # Gemma uses standard Linear layers
+            if isinstance(module, nn.Linear) or (
+                hasattr(module, 'weight') and isinstance(module.weight, nn.Parameter)
+                and module.weight.ndim == 2 and not isinstance(module, nn.Embedding)
+            ):
                 parent_name = ".".join(name.split(".")[:-1])
                 child_name = name.split(".")[-1]
                 parent = model
@@ -106,12 +115,12 @@ def apply_lora(model, rank, target_modules=["q_proj", "v_proj"]):
 
 
 def train_lora_model(rank, train_dataset, val_dataset, n_epochs=3, lr=1e-3, batch_size=32):
-    """Train a Gemma-3-1b model with LoRA at a specific rank."""
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-pt")
+    """Train a GPT-2 model with LoRA at a specific rank."""
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "google/gemma-3-1b-pt", num_labels=2, torch_dtype=torch.bfloat16
+        "gpt2", num_labels=2
     )
     model.config.pad_token_id = tokenizer.eos_token_id
     model = model.to(DEVICE)
@@ -200,7 +209,7 @@ def run_lora_experiment():
     with open(data_path) as f:
         data = json.load(f)
 
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-pt")
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
 
     train_dataset = TextClassificationDataset(

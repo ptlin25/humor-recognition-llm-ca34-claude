@@ -30,7 +30,7 @@ def load_json(path):
 
 
 def plot_figure1_main_results():
-    """Figure 1: Main results - PCA spectrum and probing (easy task, Gemma-3-1b)."""
+    """Figure 1: Main results - PCA spectrum and probing (easy task, GPT-2)."""
     data = load_json(RESULTS_DIR / "activation_analysis_results.json")
     pca_results = data["pca_results"]
 
@@ -45,7 +45,7 @@ def plot_figure1_main_results():
     ax.bar(range(1, len(var)+1), var, color=colors)
     ax.set_xlabel("Principal Component")
     ax.set_ylabel("Explained Variance Ratio")
-    ax.set_title(f"A) Singular Value Spectrum\n(Gemma-3-1b, Layer {best_layer})")
+    ax.set_title(f"A) Singular Value Spectrum\n(GPT-2, Layer {best_layer})")
     ax.set_yscale("log")
     ax.grid(True, alpha=0.3, axis="y")
 
@@ -119,7 +119,7 @@ def plot_figure1_main_results():
         ax.annotate(f"{a:.3f}", (r, a), textcoords="offset points",
                     xytext=(5, 5), fontsize=7)
 
-    plt.suptitle("Figure 1: Humor Recognition Rank Analysis (Gemma-3-1b, Jokes vs. Factual Text)",
+    plt.suptitle("Figure 1: Humor Recognition Rank Analysis (GPT-2 Small, Jokes vs. Factual Text)",
                  fontsize=14, fontweight="bold", y=1.02)
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure1_main_results.png", bbox_inches="tight")
@@ -146,21 +146,15 @@ def plot_figure2_hard_tasks():
         task_data = hard[key]
         layers = []
         md_accs = []
-        r1_accs = []
         r4_accs = []
-        r16_accs = []
         best_accs = []
 
         for lr in task_data["probe_by_layer"]:
             layers.append(lr["layer"])
             md_accs.append(lr["mean_diff_acc"])
             probes = lr["probes"]
-            r1 = next((p["accuracy"] for p in probes if p["rank"] == 1), None)
             r4 = next((p["accuracy"] for p in probes if p["rank"] == 4), None)
-            r16 = next((p["accuracy"] for p in probes if p["rank"] == 16), None)
-            r1_accs.append(r1)
             r4_accs.append(r4)
-            r16_accs.append(r16)
             best_accs.append(max(p["accuracy"] for p in probes))
 
         ax.plot(layers, md_accs, "o-", color=color, label="Mean Diff (r=1)", markersize=4, linewidth=1.5)
@@ -175,7 +169,7 @@ def plot_figure2_hard_tasks():
         ax.legend(fontsize=7, loc="upper left")
         ax.grid(True, alpha=0.3)
 
-    plt.suptitle("Figure 2: Humor Detection with Controlled Confounds (Gemma-3-1b)",
+    plt.suptitle("Figure 2: Humor Detection with Controlled Confounds (GPT-2 Small)",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure2_hard_tasks.png", bbox_inches="tight")
@@ -244,41 +238,41 @@ def plot_figure3_comparison():
 
 
 def plot_figure4_pythia():
-    """Figure 4: Cross-model comparison (Gemma-3-1b vs GPT-2)."""
-    gemma = load_json(RESULTS_DIR / "activation_analysis_results.json")
-    gpt2 = load_json(RESULTS_DIR / "gpt2_results.json")
+    """Figure 4: Cross-model comparison (GPT-2 vs Pythia-410M)."""
+    gpt2 = load_json(RESULTS_DIR / "activation_analysis_results.json")
+    pythia = load_json(RESULTS_DIR / "pythia_results.json")
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     # Panel A: Mean diff accuracy
     ax = axes[0]
-    gemma_md = [r["accuracy"] for r in gemma["mean_diff_results"]]
-    gpt2_md = [r["mean_diff_acc"] for r in gpt2["probe_results"]]
-    gemma_layers = np.linspace(0, 1, len(gemma_md))
+    gpt2_md = [r["accuracy"] for r in gpt2["mean_diff_results"]]
+    pythia_md = [r["mean_diff_acc"] for r in pythia["probe_results"]]
     gpt2_layers = np.linspace(0, 1, len(gpt2_md))
-    ax.plot(gemma_layers, gemma_md, "o-", color="blue", label=f"Gemma-3-1b (1B, {len(gemma_md)-1}L)", markersize=5)
-    ax.plot(gpt2_layers, gpt2_md, "s-", color="red", label=f"GPT-2 (117M, {len(gpt2_md)-1}L)", markersize=4)
+    pythia_layers = np.linspace(0, 1, len(pythia_md))
+    ax.plot(gpt2_layers, gpt2_md, "o-", color="blue", label=f"GPT-2 (124M, {len(gpt2_md)-1}L)", markersize=5)
+    ax.plot(pythia_layers, pythia_md, "s-", color="red", label=f"Pythia-410M ({len(pythia_md)-1}L)", markersize=4)
     ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.5)
     ax.set_xlabel("Normalized Layer Position")
     ax.set_ylabel("Rank-1 Probe Accuracy")
-    ax.set_title("A) Rank-1 Probe: Gemma-3-1b vs GPT-2")
+    ax.set_title("A) Rank-1 Probe: GPT-2 vs Pythia-410M")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
     # Panel B: Best probe accuracy
     ax = axes[1]
-    gemma_best = [max(r["accuracy"] for r in pr["results_by_rank"]) for pr in gemma["probe_results"]]
-    gpt2_best = [max(p["accuracy"] for p in pr["probes"]) for pr in gpt2["probe_results"]]
-    ax.plot(gemma_layers, gemma_best, "o-", color="blue", label="Gemma-3-1b (1B)", markersize=5)
-    ax.plot(gpt2_layers, gpt2_best, "s-", color="red", label="GPT-2 (117M)", markersize=4)
+    gpt2_best = [max(r["accuracy"] for r in pr["results_by_rank"]) for pr in gpt2["probe_results"]]
+    pythia_best = [max(p["accuracy"] for p in pr["probes"]) for pr in pythia["probe_results"]]
+    ax.plot(gpt2_layers, gpt2_best, "o-", color="blue", label="GPT-2 (124M)", markersize=5)
+    ax.plot(pythia_layers, pythia_best, "s-", color="red", label="Pythia-410M", markersize=4)
     ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.5)
     ax.set_xlabel("Normalized Layer Position")
     ax.set_ylabel("Best Probe Accuracy")
-    ax.set_title("B) Best Probe: Gemma-3-1b vs GPT-2")
+    ax.set_title("B) Best Probe: GPT-2 vs Pythia-410M")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-    plt.suptitle("Figure 4: Cross-Model Comparison (Jokes vs. Factual Text)",
+    plt.suptitle("Figure 4: Cross-Model Consistency (Jokes vs. Factual Text)",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure4_cross_model.png", bbox_inches="tight")
@@ -321,149 +315,12 @@ def plot_figure5_lora_detail():
     for p, a, r in zip(params, accs, ranks):
         ax.annotate(f"r={r}", (p, a), textcoords="offset points", xytext=(8, -5), fontsize=8)
 
-    plt.suptitle("Figure 5: LoRA Fine-tuning for Humor Detection (Gemma-3-1b, Jokes vs. Factual)",
+    plt.suptitle("Figure 5: LoRA Fine-tuning for Humor Detection (GPT-2, Jokes vs. Factual)",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "figure5_lora_detail.png", bbox_inches="tight")
     plt.close()
     print("Saved figure5_lora_detail.png")
-
-
-def plot_figure6_generalization():
-    """Figure 6: Cross-dataset generalization (Dataset A vs HaHackathon)."""
-    path = RESULTS_DIR / "generalization_results.json"
-    if not path.exists():
-        print("generalization_results.json not found, skipping figure 6")
-        return
-    gen = load_json(path)
-
-    ds_A = gen["dataset_A"]
-    ds_B = gen["dataset_B"]
-    atob = gen["transfer_A_to_B"]
-    btoa = gen["transfer_B_to_A"]
-
-    A_layers     = [r["layer"]         for r in ds_A["probe_by_layer"]]
-    A_full       = [r["full_rank_acc"] for r in ds_A["probe_by_layer"]]
-    A_md         = [r["mean_diff_acc"] for r in ds_A["probe_by_layer"]]
-    B_layers     = [r["layer"]         for r in ds_B["probe_by_layer"]]
-    B_full       = [r["full_rank_acc"] for r in ds_B["probe_by_layer"]]
-    B_md         = [r["mean_diff_acc"] for r in ds_B["probe_by_layer"]]
-
-    A_best = ds_A["best_layer"]
-    B_best = ds_B["best_layer"]
-
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-
-    # ------------------------------------------------------------------
-    # Panel A: Layerwise probe accuracy for both datasets
-    # ------------------------------------------------------------------
-    ax = axes[0, 0]
-    ax.plot(A_layers, A_full, "o-",  color="blue",       label="A full-rank",    markersize=4, linewidth=1.8)
-    ax.plot(A_layers, A_md,   "o--", color="cornflowerblue", label="A rank-1 (mean diff)", markersize=4, linewidth=1.2)
-    ax.plot(B_layers, B_full, "s-",  color="red",        label="B full-rank",    markersize=4, linewidth=1.8)
-    ax.plot(B_layers, B_md,   "s--", color="lightcoral", label="B rank-1 (mean diff)", markersize=4, linewidth=1.2)
-    ax.axvline(x=A_best, color="blue", linestyle=":", alpha=0.5, linewidth=1)
-    ax.axvline(x=B_best, color="red",  linestyle=":", alpha=0.5, linewidth=1)
-    ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.4)
-    ax.set_xlabel("Layer")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("A) Layerwise Probe Accuracy\n(A = Jokes vs Factual, B = HaHackathon)")
-    ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
-
-    # ------------------------------------------------------------------
-    # Panel B: PCA compression curve at best layer for each dataset
-    # ------------------------------------------------------------------
-    ax = axes[0, 1]
-    A_rbr = ds_A["probe_by_layer"][A_best]["results_by_rank"]
-    B_rbr = ds_B["probe_by_layer"][B_best]["results_by_rank"]
-    # Exclude the full-rank point (rank = hidden_size) — it breaks log₂ spacing
-    A_rbr_curve = [r for r in A_rbr if r["rank"] < A_rbr[-1]["rank"]]
-    B_rbr_curve = [r for r in B_rbr if r["rank"] < B_rbr[-1]["rank"]]
-    A_ranks = [r["rank"] for r in A_rbr_curve]
-    A_accs  = [r["accuracy"] for r in A_rbr_curve]
-    B_ranks = [r["rank"] for r in B_rbr_curve]
-    B_accs  = [r["accuracy"] for r in B_rbr_curve]
-    ax.plot(A_ranks, A_accs, "o-", color="blue", label=f"A (layer {A_best})", markersize=5, linewidth=1.8)
-    ax.plot(B_ranks, B_accs, "s-", color="red",  label=f"B (layer {B_best})", markersize=5, linewidth=1.8)
-    # Full-rank accuracy as horizontal reference lines
-    ax.axhline(y=A_rbr[-1]["accuracy"], color="blue", linestyle="--", alpha=0.35, linewidth=1)
-    ax.axhline(y=B_rbr[-1]["accuracy"], color="red",  linestyle="--", alpha=0.35, linewidth=1)
-    ax.axvline(x=ds_A["effective_dimension"], color="blue", linestyle=":", alpha=0.6, linewidth=1,
-               label=f"A eff. dim = {ds_A['effective_dimension']}")
-    ax.axvline(x=ds_B["effective_dimension"], color="red",  linestyle=":", alpha=0.6, linewidth=1,
-               label=f"B eff. dim = {ds_B['effective_dimension']}")
-    ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.4)
-    ax.set_xlabel("Probe Rank (PCA components)")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("B) PCA Compression Curve at Best Layer")
-    ax.set_xscale("log", base=2)
-    ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
-
-    # ------------------------------------------------------------------
-    # Panel C: Cross-dataset probe transfer by layer
-    # ------------------------------------------------------------------
-    ax = axes[1, 0]
-    atob_layers = [r["layer"]    for r in atob["probe_transfer"]]
-    atob_accs   = [r["accuracy"] for r in atob["probe_transfer"]]
-    btoa_layers = [r["layer"]    for r in btoa["probe_transfer"]]
-    btoa_accs   = [r["accuracy"] for r in btoa["probe_transfer"]]
-
-    ax.plot(atob_layers, atob_accs, "o-", color="purple",     label="A→B probe transfer", markersize=4, linewidth=1.8)
-    ax.plot(btoa_layers, btoa_accs, "s-", color="darkorange",  label="B→A probe transfer", markersize=4, linewidth=1.8)
-    # In-domain best as reference lines
-    ax.axhline(y=max(A_full), color="blue", linestyle="--", alpha=0.5, linewidth=1, label=f"A in-domain best ({max(A_full):.3f})")
-    ax.axhline(y=max(B_full), color="red",  linestyle="--", alpha=0.5, linewidth=1, label=f"B in-domain best ({max(B_full):.3f})")
-    ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.4)
-    ax.set_xlabel("Layer")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("C) Cross-Dataset Probe Transfer by Layer")
-    ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
-
-    # ------------------------------------------------------------------
-    # Panel D: Summary bar chart — in-domain vs transfer
-    # ------------------------------------------------------------------
-    ax = axes[1, 1]
-    atob_dir = atob["direction_transfer"]
-    btoa_dir = btoa["direction_transfer"]
-
-    bar_labels = [
-        "A\nin-domain",
-        "B\nin-domain",
-        "A→B\nprobe",
-        "B→A\nprobe",
-        "A→B\ndirection",
-        "B→A\ndirection",
-    ]
-    bar_values = [
-        max(A_full),
-        max(B_full),
-        max(atob_accs),
-        max(btoa_accs),
-        atob_dir["accuracy"],
-        btoa_dir["accuracy"],
-    ]
-    bar_colors = ["blue", "red", "mediumpurple", "darkorange", "plum", "peachpuff"]
-    bars = ax.bar(range(len(bar_labels)), bar_values, color=bar_colors, edgecolor="black", linewidth=0.6)
-    ax.set_xticks(range(len(bar_labels)))
-    ax.set_xticklabels(bar_labels, fontsize=9)
-    ax.set_ylabel("Accuracy")
-    ax.set_title("D) In-Domain vs. Cross-Dataset Transfer")
-    ax.axhline(y=0.5, color="gray", linestyle=":", alpha=0.4)
-    ax.set_ylim(min(0.4, min(bar_values) - 0.03), min(1.02, max(bar_values) + 0.08))
-    ax.grid(True, alpha=0.3, axis="y")
-    for bar, val in zip(bars, bar_values):
-        ax.text(bar.get_x() + bar.get_width() / 2, val + 0.005,
-                f"{val:.3f}", ha="center", va="bottom", fontsize=8)
-
-    plt.suptitle("Figure 6: Cross-Dataset Generalization (Gemma-3-1b)",
-                 fontsize=13, fontweight="bold")
-    plt.tight_layout()
-    plt.savefig(PLOTS_DIR / "figure6_generalization.png", bbox_inches="tight")
-    plt.close()
-    print("Saved figure6_generalization.png")
 
 
 if __name__ == "__main__":
@@ -473,5 +330,4 @@ if __name__ == "__main__":
     plot_figure3_comparison()
     plot_figure4_pythia()
     plot_figure5_lora_detail()
-    plot_figure6_generalization()
     print("\nAll figures saved to results/plots/")

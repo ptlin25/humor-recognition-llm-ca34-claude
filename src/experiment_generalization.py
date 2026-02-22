@@ -6,7 +6,7 @@ Datasets:
   B — HaHackathon (SemEval 2021 Task 7), loaded from datasets/hahackathon/
 
 For each dataset independently:
-  - Extract Gemma-3-1b-it hidden states (all layers, last-token pooling)
+  - Extract GPT-2 hidden states (all layers, last-token pooling)
   - Train layerwise linear probes; report accuracy/F1 vs layer
   - PCA compression curves (probe accuracy vs number of components)
   - Compute effective dimension (min components to reach within 1% of full-rank)
@@ -44,7 +44,7 @@ if torch.cuda.is_available():
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-MODEL_NAME = "google/gemma-3-1b-pt"
+MODEL_NAME = "gpt2"
 
 
 # ---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ def extract_activations(model, tokenizer, texts, batch_size=64, max_length=128):
             batch_acts = []
             for b in range(hidden_state.shape[0]):
                 pos = last_token_pos[b].item()
-                batch_acts.append(hidden_state[b, pos, :].float().cpu().numpy())
+                batch_acts.append(hidden_state[b, pos, :].cpu().numpy())
             all_activations[layer_idx].append(np.stack(batch_acts))
 
     for layer in all_activations:
@@ -148,7 +148,7 @@ def linear_probe_full_rank(train_acts, train_labels, test_acts, test_labels):
     scaler = StandardScaler()
     train_scaled = scaler.fit_transform(train_acts)
     test_scaled = scaler.transform(test_acts)
-    probe = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
+    probe = LogisticRegression(max_iter=1000, random_state=SEED)
     probe.fit(train_scaled, train_labels)
     preds = probe.predict(test_scaled)
     return {
@@ -173,7 +173,7 @@ def linear_probe_varying_rank(train_acts, train_labels, test_acts, test_labels,
         pca = PCA(n_components=rank, random_state=SEED)
         train_r = pca.fit_transform(train_scaled)
         test_r = pca.transform(test_scaled)
-        lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
+        lr = LogisticRegression(max_iter=1000, random_state=SEED)
         lr.fit(train_r, train_labels)
         preds = lr.predict(test_r)
         results.append({
@@ -184,7 +184,7 @@ def linear_probe_varying_rank(train_acts, train_labels, test_acts, test_labels,
         })
 
     # Full-rank baseline
-    lr_full = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
+    lr_full = LogisticRegression(max_iter=1000, random_state=SEED)
     lr_full.fit(train_scaled, train_labels)
     preds_full = lr_full.predict(test_scaled)
     results.append({
@@ -365,15 +365,9 @@ def run_generalization():
     print(f"\nLoading {MODEL_NAME}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME, output_hidden_states=True, torch_dtype=torch.bfloat16
-    )
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, output_hidden_states=True)
     model = model.to(DEVICE)
     model.eval()
-    # Gemma 3 nests architecture attrs under text_config; promote them for uniform access
-    if not hasattr(model.config, "hidden_size") and hasattr(model.config, "text_config"):
-        model.config.hidden_size = model.config.text_config.hidden_size
-        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     n_layers = model.config.num_hidden_layers + 1
     print(f"  Hidden size: {model.config.hidden_size}, Layers: {model.config.num_hidden_layers}")

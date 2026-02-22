@@ -138,7 +138,7 @@ def extract_activations(model, tokenizer, texts, batch_size=32, max_length=128):
             batch_acts = []
             for b in range(hidden_state.shape[0]):
                 pos = last_token_pos[b].item()
-                batch_acts.append(hidden_state[b, pos, :].float().cpu().numpy())
+                batch_acts.append(hidden_state[b, pos, :].cpu().numpy())
             all_activations[layer_idx].append(np.stack(batch_acts))
 
     for layer in all_activations:
@@ -178,15 +178,11 @@ def run_sentiment_comparison():
     print(f"Sentiment data: train={len(train_texts)}, test={len(test_texts)}")
 
     # Load model
-    model_name = "google/gemma-3-1b-pt"
+    model_name = "gpt2"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True, torch_dtype=torch.bfloat16)
+    model = AutoModelForCausalLM.from_pretrained(model_name, output_hidden_states=True)
     model = model.to(DEVICE)
-    # Gemma 3 nests architecture attrs under text_config; promote them for uniform access
-    if not hasattr(model.config, "hidden_size") and hasattr(model.config, "text_config"):
-        model.config.hidden_size = model.config.text_config.hidden_size
-        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     # Extract activations
     train_acts = extract_activations(model, tokenizer, train_texts)
@@ -223,7 +219,7 @@ def run_sentiment_comparison():
             train_reduced = pca.fit_transform(train_scaled)
             test_reduced = pca.transform(test_scaled)
 
-            lr = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
+            lr = LogisticRegression(max_iter=1000, random_state=SEED)
             lr.fit(train_reduced, train_labels)
             preds = lr.predict(test_reduced)
             acc = accuracy_score(test_labels, preds)
@@ -231,7 +227,7 @@ def run_sentiment_comparison():
             probe_by_rank.append({"rank": rank, "accuracy": float(acc), "f1": float(f1)})
 
         # Full rank
-        lr_full = LogisticRegression(max_iter=2000, C=10.0, class_weight="balanced", random_state=SEED)
+        lr_full = LogisticRegression(max_iter=1000, random_state=SEED)
         lr_full.fit(train_scaled, train_labels)
         full_acc = accuracy_score(test_labels, lr_full.predict(test_scaled))
         probe_by_rank.append({"rank": train_scaled.shape[1], "accuracy": float(full_acc), "f1": float(full_acc)})
