@@ -1,0 +1,13 @@
+{
+  "binary_train_n": 6872,
+  "binary_test_n": 770,
+  "binary_train_pos_frac": 0.5,
+  "binary_test_pos_frac": 0.5,
+  "train_examples": [
+    "Faking a smile can trick your brain into thinking you're happy, actually boosting your mood.",
+    "How do jellyfish live without brains They are blond",
+    "When you start thinking too hard about whether the fruit flies came into your house with the fruit, or if they are hiding in your house waiting for the fruit.",
+    "Whats the best and worst job you had? Auntie Red Tweet Tea",
+    "Roman scholar Marcus Terentius Varro predicted microbiology over 2,000 years ago. He wrote, \"there are bred certain minute creatures which cannot be seen by the eyes, but which float in the air and enter the body through the mouth and nose and cause serious diseases.\""
+  ]
+}
