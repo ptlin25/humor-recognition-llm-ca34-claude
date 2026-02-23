@@ -7,6 +7,7 @@ Usage:
     modal run modal/run_probing.py::main --model google/gemma-3-1b-it
     modal run modal/run_probing.py::main --model google/gemma-3-4b-it
     modal run modal/run_probing.py::main --model google/gemma-3-4b-it --skip-transfer
+    modal run modal/run_probing.py::main --model google/gemma-3-4b-it --only-control
 
 Prerequisites:
     pip install modal
@@ -87,38 +88,54 @@ def _ensure_datasets() -> None:
     secrets=[modal.Secret.from_name("huggingface")],
     timeout=7200,
 )
-def run_probing(model_id: str, skip_transfer: bool = False) -> dict:
+def run_probing(model_id: str, skip_transfer: bool = False, only_control: bool = False) -> dict:
     os.environ["HF_HOME"] = "/hf-cache/huggingface"
     sys.path.insert(0, "/repo/src")
 
     print(f"=== Starting probing: {model_id} ===")
     _ensure_datasets()
 
-    from experiment_new_model import run_experiment as run_new_model  # type: ignore
-    output = {"new_model": run_new_model(model_id=model_id)}
+    output = {}
 
-    if not skip_transfer:
-        from experiment_cross_transfer import run_experiment as run_cross_transfer  # type: ignore
-        output["cross_transfer"] = run_cross_transfer(model_id=model_id)
+    if not only_control:
+        from experiment_new_model import run_experiment as run_new_model  # type: ignore
+        output["new_model"] = run_new_model(model_id=model_id)
+
+        if not skip_transfer:
+            from experiment_cross_transfer import run_experiment as run_cross_transfer  # type: ignore
+            output["cross_transfer"] = run_cross_transfer(model_id=model_id)
+
+    from experiment_null_control import run_experiment as run_null_control  # type: ignore
+    output["null_control"] = run_null_control(model_id=model_id)
 
     print("=== Done. ===")
     return output
 
 
 @app.local_entrypoint()
-def main(model: str = "google/gemma-3-4b-it", skip_transfer: bool = False) -> None:
+def main(
+    model: str = "google/gemma-3-4b-it",
+    skip_transfer: bool = False,
+    only_control: bool = False,
+) -> None:
     results_dir = REPO_ROOT / "results"
     results_dir.mkdir(exist_ok=True)
     slug = model.replace("/", "-")
 
-    print(f"Running: {model}")
-    output = run_probing.remote(model, skip_transfer)
+    print(f"Running: {model}  (only_control={only_control})")
+    output = run_probing.remote(model, skip_transfer, only_control)
 
-    path = results_dir / f"{slug}_results.json"
-    path.write_text(json.dumps(output["new_model"], indent=2))
-    print(f"Saved → {path}")
+    if "new_model" in output:
+        path = results_dir / f"{slug}_results.json"
+        path.write_text(json.dumps(output["new_model"], indent=2))
+        print(f"Saved → {path}")
 
     if "cross_transfer" in output:
         path = results_dir / f"{slug}_cross_transfer.json"
         path.write_text(json.dumps(output["cross_transfer"], indent=2))
+        print(f"Saved → {path}")
+
+    if "null_control" in output:
+        path = results_dir / f"{slug}_null_control.json"
+        path.write_text(json.dumps(output["null_control"], indent=2))
         print(f"Saved → {path}")
