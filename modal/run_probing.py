@@ -60,6 +60,7 @@ def _ensure_datasets() -> None:
     specs = [
         ("short_jokes", "ysharma/short_jokes", None),
         ("one_million_reddit_jokes", "SocialGrep/one-million-reddit-jokes", "train[:80000]"),
+        ("ag_news", "fancyzhx/ag_news", "train[:10000]"),
     ]
 
     for name, hf_id, split_spec in specs:
@@ -94,9 +95,7 @@ def run_probing(model_id: str, skip_transfer: bool = False, only_control: bool =
 
     print(f"=== Starting probing: {model_id} ===")
 
-    # short_jokes and reddit are only needed for new_model and cross_transfer
-    if not only_control:
-        _ensure_datasets()
+    _ensure_datasets()
 
     output = {}
 

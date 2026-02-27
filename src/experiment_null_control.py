@@ -173,30 +173,28 @@ def run_experiment(model_id, mock=False):
 
     # ------------------------------------------------------------------
     # Non-humor dataset with random labels
-    # Uses deduplicated factual sentences — no humor signal by construction.
-    # Small (~99 unique texts) but sufficient for a null check.
+    # Uses AG News (news articles) — no humor signal by construction.
+    # Labels are random balanced 50/50; AG News topic labels are ignored.
     # ------------------------------------------------------------------
-    print("\nLoading non-humor (factual) dataset...")
+    print("\nLoading non-humor (AG News) dataset...")
 
     if mock:
-        nh_train_texts = [f"fact train {i}" for i in range(40)]
-        nh_test_texts  = [f"fact test {i}"  for i in range(20)]
+        nh_train_texts = [f"news train {i}" for i in range(40)]
+        nh_test_texts  = [f"news test {i}"  for i in range(20)]
     else:
-        from data_preparation import generate_non_humor_texts
-        # Deduplicate while preserving order
-        seen = set()
-        nh_unique = []
-        for t in generate_non_humor_texts(2000):
-            if t not in seen:
-                seen.add(t)
-                nh_unique.append(t)
-        n_nh_train = int(len(nh_unique) * 0.7)
-        nh_train_texts = nh_unique[:n_nh_train]
-        nh_test_texts  = nh_unique[n_nh_train:]
+        from datasets import load_from_disk
+        ag_ds = load_from_disk(str(PROJECT_ROOT / "datasets" / "ag_news" / "train"))
+        rng_ag = np.random.default_rng(SEED + 5)
+        n_ag = 1000
+        indices = rng_ag.choice(len(ag_ds), n_ag, replace=False)
+        ag_texts = [ag_ds[int(i)]["text"] for i in indices]
+        n_nh_train = int(n_ag * 0.7)
+        nh_train_texts = ag_texts[:n_nh_train]
+        nh_test_texts  = ag_texts[n_nh_train:]
 
     nh_train_labels = make_balanced_random_labels(len(nh_train_texts), seed=SEED + 10)
     nh_test_labels  = make_balanced_random_labels(len(nh_test_texts),  seed=SEED + 11)
-    print(f"  Non-humor factual: train={len(nh_train_texts)}, test={len(nh_test_texts)}")
+    print(f"  AG News (random labels): train={len(nh_train_texts)}, test={len(nh_test_texts)}")
 
     # ------------------------------------------------------------------
     # Extract activations once per unique text set
@@ -293,7 +291,7 @@ def run_experiment(model_id, mock=False):
             "shuffled":    {"dataset": "hahackathon_binary_shuffled_labels",
                             "n_train": len(train_texts), "n_test": len(test_texts),
                             "probe_by_layer": shuffled_results},
-            "non_humor_rnd": {"dataset": "factual_random_labels",
+            "non_humor_rnd": {"dataset": "ag_news_random_labels",
                               "n_train": len(nh_train_texts), "n_test": len(nh_test_texts),
                               "probe_by_layer": nh_rnd_results},
         },
