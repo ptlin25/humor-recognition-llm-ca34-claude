@@ -137,22 +137,21 @@ def plot_null_control(model_id: str, data: dict) -> Path:
     ax_md.grid(True, alpha=0.3)
 
     # ------------------------------------------------------------------ C --
-    # Rank sweep at best layer (per condition)
+    # Rank sweep pinned to real condition's best layer for all conditions
+    real_best_layer = best_full_rank_layer(conditions["real"]["probe_by_layer"])
     for cond_key, style in CONDITION_STYLE.items():
         if cond_key not in conditions:
             continue
         pbl = conditions[cond_key]["probe_by_layer"]
-        best_layer = best_full_rank_layer(pbl)
-        ranks, accs = get_rank_sweep_at_layer(pbl, best_layer)
+        ranks, accs = get_rank_sweep_at_layer(pbl, real_best_layer)
 
-        # x positions: log2 of rank, with full-rank placed at rank 64*2 for spacing
         hidden = data["hidden_size"]
         x_labels = [str(r) if r != hidden else f"full\n({hidden})" for r in ranks]
         x_pos = list(range(len(ranks)))
 
         ax_rank.plot(x_pos, accs,
                      color=style["color"], marker=style["marker"],
-                     label=f"{style['label']} (layer {best_layer})",
+                     label=style["label"],
                      markersize=5, linewidth=1.8)
 
     ax_rank.axhline(0.5, color="gray", linestyle=":", alpha=0.6, label="Chance (0.5)")
@@ -160,7 +159,7 @@ def plot_null_control(model_id: str, data: dict) -> Path:
     ax_rank.set_xticklabels(x_labels, fontsize=9)
     ax_rank.set_xlabel("Probe Rank")
     ax_rank.set_ylabel("Accuracy")
-    ax_rank.set_title("C) Rank Sweep at Best Layer\n(How many dims encode humor?)")
+    ax_rank.set_title(f"C) Rank Sweep at Layer {real_best_layer} (real's best)\n(How many dims encode humor?)")
     ax_rank.legend(fontsize=8)
     ax_rank.grid(True, alpha=0.3)
 
