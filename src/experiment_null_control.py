@@ -4,15 +4,17 @@ Null-label control experiment for humor probing.
 Verifies that probes are detecting genuine humor signal and not artefacts of
 the activation geometry or probe pipeline.
 
-Protocol:
-  1. Load HaHackathon (binary, balanced 50/50).
-  2. Extract activations with real labels (positive control).
-  3. Permute labels independently on train and test sets (null condition).
-  4. Run identical probe pipeline on both conditions.
-  5. Expected: real-label >> 0.5, shuffled-label ≈ 0.5.
+Three conditions:
+  real          — HaHackathon with true is_humor labels (positive control).
+  shuffled      — HaHackathon texts, labels independently permuted.
+                  Tests for spurious structure in humor-adjacent text.
+  non_humor_rnd — Factual (non-humor) texts with balanced random labels.
+                  Tests whether the probe finds signal in completely
+                  non-humorous text when labels carry no information.
 
-If shuffled accuracy is consistently above 0.5 it suggests the probe is
-picking up spurious structure (e.g., text-length, position) rather than humor.
+Expected: real >> 0.5, shuffled ≈ 0.5, non_humor_rnd ≈ 0.5.
+If shuffled or non_humor_rnd score above chance, the probe is picking up
+something other than humor (e.g., text-length, register, position bias).
 
 Results saved to results/{model_slug}_null_control.json.
 
@@ -63,6 +65,15 @@ def permute_labels(labels, seed):
     arr = np.array(labels, dtype=int)
     rng.shuffle(arr)
     return arr.tolist()
+
+
+def make_balanced_random_labels(n, seed):
+    """Return n balanced (50/50) labels in random order."""
+    rng = np.random.default_rng(seed)
+    half = n // 2
+    labels = [1] * half + [0] * (n - half)
+    rng.shuffle(labels)
+    return [int(x) for x in labels]
 
 
 def run_probe_condition(condition_name, train_acts, train_labels, test_acts, test_labels, n_layers):
@@ -161,34 +172,69 @@ def run_experiment(model_id, mock=False):
     print(f"  HaHackathon: train={len(train_texts)}, test={len(test_texts)}")
 
     # ------------------------------------------------------------------
-    # Extract activations once (texts are unchanged between conditions)
+    # Non-humor dataset with random labels
+    # Uses deduplicated factual sentences — no humor signal by construction.
+    # Small (~99 unique texts) but sufficient for a null check.
     # ------------------------------------------------------------------
-    print("\nExtracting activations...")
+    print("\nLoading non-humor (factual) dataset...")
+
+    if mock:
+        nh_train_texts = [f"fact train {i}" for i in range(40)]
+        nh_test_texts  = [f"fact test {i}"  for i in range(20)]
+    else:
+        from data_preparation import generate_non_humor_texts
+        # Deduplicate while preserving order
+        seen = set()
+        nh_unique = []
+        for t in generate_non_humor_texts(2000):
+            if t not in seen:
+                seen.add(t)
+                nh_unique.append(t)
+        n_nh_train = int(len(nh_unique) * 0.7)
+        nh_train_texts = nh_unique[:n_nh_train]
+        nh_test_texts  = nh_unique[n_nh_train:]
+
+    nh_train_labels = make_balanced_random_labels(len(nh_train_texts), seed=SEED + 10)
+    nh_test_labels  = make_balanced_random_labels(len(nh_test_texts),  seed=SEED + 11)
+    print(f"  Non-humor factual: train={len(nh_train_texts)}, test={len(nh_test_texts)}")
+
+    # ------------------------------------------------------------------
+    # Extract activations once per unique text set
+    # ------------------------------------------------------------------
+    print("\nExtracting activations — HaHackathon...")
     t0 = time.time()
 
     if mock:
-        train_acts = {
-            layer: np.random.randn(len(train_texts), hidden_dim).astype(np.float32)
-            for layer in range(n_layers + 1)
-        }
-        test_acts = {
-            layer: np.random.randn(len(test_texts), hidden_dim).astype(np.float32)
-            for layer in range(n_layers + 1)
-        }
+        def _mock_acts(n):
+            return {
+                layer: np.random.randn(n, hidden_dim).astype(np.float32)
+                for layer in range(n_layers + 1)
+            }
+        train_acts    = _mock_acts(len(train_texts))
+        test_acts     = _mock_acts(len(test_texts))
+        nh_train_acts = _mock_acts(len(nh_train_texts))
+        nh_test_acts  = _mock_acts(len(nh_test_texts))
     else:
-        train_acts = extract_activations(model, tokenizer, train_texts)
-        test_acts  = extract_activations(model, tokenizer, test_texts)
+        train_acts    = extract_activations(model, tokenizer, train_texts)
+        test_acts     = extract_activations(model, tokenizer, test_texts)
+        print(f"  HaHackathon done in {time.time() - t0:.1f}s")
 
-    print(f"  Activations extracted in {time.time() - t0:.1f}s")
+        print("Extracting activations — non-humor factual...")
+        t1 = time.time()
+        nh_train_acts = extract_activations(model, tokenizer, nh_train_texts)
+        nh_test_acts  = extract_activations(model, tokenizer, nh_test_texts)
+        print(f"  Non-humor done in {time.time() - t1:.1f}s")
+
+    print(f"  Total extraction time: {time.time() - t0:.1f}s")
 
     # ------------------------------------------------------------------
-    # Build shuffled-label condition
+    # Build shuffled-label condition (same HaHackathon texts, random labels)
     # ------------------------------------------------------------------
     shuffled_train_labels = permute_labels(train_labels, seed=SEED)
     shuffled_test_labels  = permute_labels(test_labels,  seed=SEED + 1)
 
     # ------------------------------------------------------------------
-    # Run both conditions
+    # Run all three conditions
     # ------------------------------------------------------------------
     real_results     = run_probe_condition(
         "real labels",
@@ -197,25 +243,39 @@ def run_experiment(model_id, mock=False):
         n_layers,
     )
     shuffled_results = run_probe_condition(
-        "shuffled labels (null control)",
+        "shuffled labels (null — humor text)",
         train_acts, shuffled_train_labels,
         test_acts,  shuffled_test_labels,
+        n_layers,
+    )
+    nh_rnd_results   = run_probe_condition(
+        "random labels on non-humor text (null — factual text)",
+        nh_train_acts, nh_train_labels,
+        nh_test_acts,  nh_test_labels,
         n_layers,
     )
 
     # ------------------------------------------------------------------
     # Summary comparison
     # ------------------------------------------------------------------
+    def _best(results):
+        md  = max(r["mean_diff_acc"] for r in results)
+        lr  = max(max(p["accuracy"] for p in r["probes"]) for r in results)
+        return md, lr
+
+    real_md,     real_lr     = _best(real_results)
+    shuffled_md, shuffled_lr = _best(shuffled_results)
+    nh_rnd_md,   nh_rnd_lr   = _best(nh_rnd_results)
+
     print("\n" + "=" * 60)
-    print("SUMMARY: Real vs Shuffled (best layer, best rank)")
-    real_best_md     = max(r["mean_diff_acc"] for r in real_results)
-    shuffled_best_md = max(r["mean_diff_acc"] for r in shuffled_results)
-    real_best_lr     = max(max(p["accuracy"] for p in r["probes"]) for r in real_results)
-    shuffled_best_lr = max(max(p["accuracy"] for p in r["probes"]) for r in shuffled_results)
-    print(f"  Mean-diff (rank-1):  real={real_best_md:.3f}  shuffled={shuffled_best_md:.3f}")
-    print(f"  Full-rank LR:        real={real_best_lr:.3f}  shuffled={shuffled_best_lr:.3f}")
-    print(f"  Gap (mean-diff): {real_best_md - shuffled_best_md:+.3f}")
-    print(f"  Gap (full-rank): {real_best_lr - shuffled_best_lr:+.3f}")
+    print("SUMMARY (best layer, best rank)")
+    print(f"  {'Condition':<38} {'mean-diff':>9} {'full-rank':>9}")
+    print(f"  {'-'*38} {'-'*9} {'-'*9}")
+    print(f"  {'real labels (HaHackathon)':<38} {real_md:>9.3f} {real_lr:>9.3f}")
+    print(f"  {'shuffled labels (humor text)':<38} {shuffled_md:>9.3f} {shuffled_lr:>9.3f}")
+    print(f"  {'random labels (non-humor text)':<38} {nh_rnd_md:>9.3f} {nh_rnd_lr:>9.3f}")
+    print(f"  Gap real→shuffled  (mean-diff): {real_md - shuffled_md:+.3f}")
+    print(f"  Gap real→non-humor (mean-diff): {real_md - nh_rnd_md:+.3f}")
     print("=" * 60)
 
     # ------------------------------------------------------------------
@@ -226,18 +286,24 @@ def run_experiment(model_id, mock=False):
         "n_layers": n_layers,
         "hidden_size": hidden_dim,
         "mock": mock,
-        "dataset": "hahackathon_binary",
-        "n_train": len(train_texts),
-        "n_test": len(test_texts),
         "conditions": {
-            "real": real_results,
-            "shuffled": shuffled_results,
+            "real":        {"dataset": "hahackathon_binary",
+                            "n_train": len(train_texts), "n_test": len(test_texts),
+                            "probe_by_layer": real_results},
+            "shuffled":    {"dataset": "hahackathon_binary_shuffled_labels",
+                            "n_train": len(train_texts), "n_test": len(test_texts),
+                            "probe_by_layer": shuffled_results},
+            "non_humor_rnd": {"dataset": "factual_random_labels",
+                              "n_train": len(nh_train_texts), "n_test": len(nh_test_texts),
+                              "probe_by_layer": nh_rnd_results},
         },
         "summary": {
-            "real_best_mean_diff": real_best_md,
-            "shuffled_best_mean_diff": shuffled_best_md,
-            "real_best_full_rank": real_best_lr,
-            "shuffled_best_full_rank": shuffled_best_lr,
+            "real_best_mean_diff":        real_md,
+            "shuffled_best_mean_diff":    shuffled_md,
+            "non_humor_rnd_best_mean_diff": nh_rnd_md,
+            "real_best_full_rank":        real_lr,
+            "shuffled_best_full_rank":    shuffled_lr,
+            "non_humor_rnd_best_full_rank": nh_rnd_lr,
         },
     }
 
@@ -248,7 +314,7 @@ def run_experiment(model_id, mock=False):
         json.dump(results, f, indent=2)
     print(f"\nResults saved to {output_path}")
 
-    if model is not None:
+    if not mock and model is not None:
         del model
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

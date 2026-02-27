@@ -93,7 +93,10 @@ def run_probing(model_id: str, skip_transfer: bool = False, only_control: bool =
     sys.path.insert(0, "/repo/src")
 
     print(f"=== Starting probing: {model_id} ===")
-    _ensure_datasets()
+
+    # short_jokes and reddit are only needed for new_model and cross_transfer
+    if not only_control:
+        _ensure_datasets()
 
     output = {}
 
