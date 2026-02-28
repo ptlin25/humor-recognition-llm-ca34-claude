@@ -231,6 +231,70 @@ def plot_figure7(model_id, transfer_results):
 
 
 # ---------------------------------------------------------------------------
+# Figure 8: Full-rank probe accuracy by absolute layer index
+# ---------------------------------------------------------------------------
+
+def plot_figure8(model_id, new_results):
+    """
+    Layer curves: full-rank probe accuracy vs absolute layer index.
+    Three lines: easy (blue), hard (orange), hahackathon (green).
+    Annotates the HaHackathon peak layer with its value.
+    """
+    tasks_data = new_results.get("tasks", {})
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    task_styles = [
+        ("easy",        "steelblue",    "o-", "Easy (Jokes vs Factual)"),
+        ("hard",        "darkorange",   "s-", "Hard (High vs Low Reddit)"),
+        ("hahackathon", "forestgreen",  "^-", "HaHackathon (Binary)"),
+    ]
+
+    haha_peak_layer = None
+    haha_peak_acc = None
+
+    for task_name, color, marker, label in task_styles:
+        if task_name not in tasks_data:
+            continue
+        probe_by_layer = tasks_data[task_name]["probe_by_layer"]
+        layers = [entry["layer"] for entry in probe_by_layer]
+        # Last entry in probes = full-rank (no PCA)
+        accs = [entry["probes"][-1]["accuracy"] for entry in probe_by_layer]
+        ax.plot(layers, accs, marker, color=color, label=label,
+                markersize=4, linewidth=1.8)
+        if task_name == "hahackathon":
+            peak_idx = int(np.argmax(accs))
+            haha_peak_layer = layers[peak_idx]
+            haha_peak_acc = accs[peak_idx]
+
+    ax.axhline(y=0.5, color="gray", linestyle="--", linewidth=1, alpha=0.6, label="Chance (0.5)")
+
+    if haha_peak_layer is not None:
+        ax.annotate(
+            f"Layer {haha_peak_layer}: {haha_peak_acc:.3f}",
+            xy=(haha_peak_layer, haha_peak_acc),
+            xytext=(haha_peak_layer + 1.5, haha_peak_acc + 0.025),
+            fontsize=9,
+            color="forestgreen",
+            arrowprops=dict(arrowstyle="->", color="forestgreen", lw=1.2),
+        )
+
+    ax.set_xlabel("Layer Index (absolute)")
+    ax.set_ylabel("Full-Rank Probe Accuracy")
+    model_label = model_id.replace("/", " / ")
+    ax.set_title(f"Figure 8: Full-Rank Probe Accuracy by Layer — {model_label}")
+    ax.set_ylim(0.4, 1.05)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    out_path = PLOTS_DIR / f"figure8_layer_curves_{model_slug(model_id)}.png"
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {out_path.name}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -328,6 +392,7 @@ def main(model_id, mock=False):
 
     print(f"Generating figures for {model_id}...")
     plot_figure6(model_id, new_results, baseline_acts, baseline_hard)
+    plot_figure8(model_id, new_results)
 
     if transfer_results is not None:
         plot_figure7(model_id, transfer_results)

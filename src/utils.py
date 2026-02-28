@@ -142,3 +142,52 @@ def mean_diff_accuracy(train_acts, train_labels, test_acts, test_labels):
     threshold = np.median(train_proj)
     preds = (test_proj > threshold).astype(int)
     return float(accuracy_score(test_labels, preds))
+
+
+def probe_mlp(train_acts, train_labels, test_acts, test_labels):
+    """
+    Non-linear probe: StandardScaler -> MLPClassifier(hidden_layer_sizes=(256,)).
+    No PCA. Operates on full hidden_dim (e.g. 2560 for Gemma 4B).
+
+    Returns:
+        dict: {"accuracy": float, "f1": float}
+    """
+    from sklearn.neural_network import MLPClassifier
+
+    scaler = StandardScaler()
+    train_s = scaler.fit_transform(train_acts)
+    test_s = scaler.transform(test_acts)
+    mlp = MLPClassifier(
+        hidden_layer_sizes=(256,),
+        max_iter=500,
+        random_state=SEED,
+        early_stopping=True,
+        validation_fraction=0.1,
+    )
+    mlp.fit(train_s, train_labels)
+    preds = mlp.predict(test_s)
+    return {
+        "accuracy": float(accuracy_score(test_labels, preds)),
+        "f1": float(f1_score(test_labels, preds, zero_division=0)),
+    }
+
+
+def get_lr_direction(train_acts, train_labels):
+    """
+    Fit StandardScaler + full-rank LR. Return the decision direction in the
+    ORIGINAL (unscaled) activation space.
+
+    The LR decision boundary in standardized space is coef_[0] @ x_std.
+    Since x_std = (x - mu) / sigma, the gradient w.r.t. x is coef_[0] / sigma.
+    We normalize this to a unit vector for use as a steering direction.
+
+    Returns:
+        np.ndarray: unit vector of shape (hidden_dim,)
+    """
+    scaler = StandardScaler()
+    train_s = scaler.fit_transform(train_acts)
+    lr = LogisticRegression(max_iter=1000, random_state=SEED)
+    lr.fit(train_s, train_labels)
+    direction = lr.coef_[0] / scaler.scale_
+    direction = direction / (np.linalg.norm(direction) + 1e-8)
+    return direction

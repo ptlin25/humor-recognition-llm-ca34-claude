@@ -29,7 +29,7 @@ import torch
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from utils import extract_activations, probe_at_ranks, mean_diff_accuracy
+from utils import extract_activations, probe_at_ranks, mean_diff_accuracy, probe_mlp
 
 SEED = 42
 random.seed(SEED)
@@ -41,9 +41,10 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Model architecture info for mock mode (n_layers includes embedding layer)
 # Values: (num_hidden_layers, hidden_size) from HuggingFace model configs
 MODEL_CONFIGS = {
-    "google/gemma-3-1b-it":  (18, 1152),
-    "google/gemma-3-4b-it":  (34, 2560),
-    "Qwen/Qwen3-4B":         (36, 2560),
+    "google/gemma-3-1b-it":   (18, 1152),
+    "google/gemma-3-4b-it":   (34, 2560),
+    "google/gemma-3-12b-it":  (46, 3840),
+    "Qwen/Qwen3-4B":          (36, 2560),
     "Qwen/Qwen3-4B-Instruct": (36, 2560),
 }
 
@@ -142,9 +143,12 @@ def make_mock_activations(n_samples, n_layers, hidden_dim):
 # ---------------------------------------------------------------------------
 
 def run_task(task_name, train_texts, train_labels, test_texts, test_labels,
-             model, tokenizer, n_layers, hidden_dim, mock=False):
+             model, tokenizer, n_layers, hidden_dim, mock=False, run_mlp=False):
     """
     Run probing for a single task. Returns per-layer probe results dict.
+
+    Args:
+        run_mlp: if True, also run MLPClassifier probe at each layer
     """
     print(f"\n--- Task: {task_name} ---")
     print(f"  Train: {len(train_texts)} | Test: {len(test_texts)}")
@@ -168,14 +172,21 @@ def run_task(task_name, train_texts, train_labels, test_texts, test_labels,
             train_acts[layer], train_labels,
             test_acts[layer], test_labels,
         )
-        probe_by_layer.append({
+        layer_entry = {
             "layer": layer,
             "mean_diff_acc": md_acc,
             "probes": probes,
-        })
+        }
+        if run_mlp:
+            layer_entry["mlp_probe"] = probe_mlp(
+                train_acts[layer], train_labels,
+                test_acts[layer], test_labels,
+            )
+        probe_by_layer.append(layer_entry)
         best = max(probes, key=lambda x: x["accuracy"])
+        mlp_str = f"  mlp={layer_entry['mlp_probe']['accuracy']:.3f}" if run_mlp else ""
         print(f"  Layer {layer:3d}: md={md_acc:.3f}  r1={probes[0]['accuracy']:.3f}  "
-              f"best_rank={best['rank']}(acc={best['accuracy']:.3f})")
+              f"best_rank={best['rank']}(acc={best['accuracy']:.3f}){mlp_str}")
 
     return {
         "n_train": len(train_texts),
@@ -188,7 +199,7 @@ def run_task(task_name, train_texts, train_labels, test_texts, test_labels,
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def run_experiment(model_id, mock=False, n_samples=None, tasks=None):
+def run_experiment(model_id, mock=False, n_samples=None, tasks=None, run_mlp=False):
     """
     Run probing experiments for the given model on all specified tasks.
 
@@ -197,6 +208,7 @@ def run_experiment(model_id, mock=False, n_samples=None, tasks=None):
         mock: If True, use random activations (no model loading)
         n_samples: Override default sample count per class (useful for quick tests)
         tasks: List of task names to run; defaults to ["easy", "hard", "hahackathon"]
+        run_mlp: If True, also run MLPClassifier probe at each layer
     """
     if tasks is None:
         tasks = ["easy", "hard", "hahackathon"]
@@ -260,6 +272,7 @@ def run_experiment(model_id, mock=False, n_samples=None, tasks=None):
         if task_name not in real_task_loaders:
             print(f"  Unknown task '{task_name}', skipping.")
             continue
+
         if mock:
             n_tr, n_te = mock_sizes.get(task_name, (100, 40))
             train_texts, train_labels, test_texts, test_labels = mock_data(n_tr, n_te)
@@ -286,6 +299,7 @@ def run_experiment(model_id, mock=False, n_samples=None, tasks=None):
         task_results = run_task(
             task_name, train_texts, train_labels, test_texts, test_labels,
             model, tokenizer, n_layers, hidden_dim, mock=mock,
+            run_mlp=run_mlp,
         )
         results["tasks"][task_name] = task_results
 
@@ -317,6 +331,8 @@ if __name__ == "__main__":
                         default=["easy", "hard", "hahackathon"],
                         choices=["easy", "hard", "hahackathon"],
                         help="Which tasks to run")
+    parser.add_argument("--run_mlp", action="store_true",
+                        help="Also run MLPClassifier probe at each layer")
     args = parser.parse_args()
 
     run_experiment(
@@ -324,4 +340,5 @@ if __name__ == "__main__":
         mock=args.mock,
         n_samples=args.n_samples,
         tasks=args.tasks,
+        run_mlp=args.run_mlp,
     )

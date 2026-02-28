@@ -1,0 +1,357 @@
+{
+  "model": "google/gemma-3-4b-it",
+  "steering_layer": 18,
+  "steering_direction": "lr_coef",
+  "alphas": [
+    -20,
+    -10,
+    0,
+    10,
+    20,
+    30
+  ],
+  "direction_norm": 1.0,
+  "prompts": [
+    "Today I went to the store and",
+    "The weather outside is",
+    "Scientists have recently discovered that",
+    "My coworker told me that",
+    "The thing about Mondays is"
+  ],
+  "generations": {
+    "-20": {
+      "Today I went to the store and": [
+        " bought a new bag of coffee beans. I\u2019ve been trying to cut back on my caffeine intake, but I really needed a good cup of coffee this morning. I decided to make a pour-over. I love the ritual of it \u2013 the grinding of the beans, the careful pouring, and the anticipation of that first sip.\n\nIt was a beautiful morning, and the coffee was even more",
+        " got some supplies to make a new terrarium! I'm so excited to start building this little ecosystem. I've been wanting to do this for ages, and finally have the time and resources to do it.\n\nI got a glass container, activated charcoal, peat moss, potting soil, decorative rocks, driftwood, succulents, and a few little ferns. It's going to be a",
+        " bought a pack of 12 Pokemon cards. They were the new Pokemon Scarlet and Violet cards, specifically the \"Paradox Rift\" set. I'm really excited to open them and build a collection!\n\nI'm a big fan of Pokemon, and I've been collecting cards since I was a kid. It's a fun and relaxing hobby, and it's always exciting"
+      ],
+      "The weather outside is": [
+        " frightful, but the spirit inside is bright! \u2744\ufe0f\u2728\n\nHere's a cozy roundup of things to do this weekend, perfect for escaping the winter chill:\n\n**Indoor Activities:**\n\n*   **Movie Marathon:** Pick a theme (classic Christmas movies, 80s comedies, superhero flicks) and settle in with popcorn and hot cocoa.\n*   **Game Night:**",
+        " frightful, but the spirits are delightful! This holiday season, celebrate the joy of giving and togetherness with these festive ideas for a memorable Christmas.\n\n**1. Decorate with a Theme:**\n\n*   **Rustic Charm:** Think burlap, wood, pinecones, and plaid.\n*   **Modern Minimalist:** Keep it simple with white lights, metallic accents, and a few carefully chosen",
+        " frightful, but the spirits are delightful! This holiday season, treat yourself and your loved ones to a cozy and magical experience with our carefully curated gift guide. We\u2019ve gathered a selection of gifts that will bring warmth, joy, and a touch of festive cheer to any home.\n\n**For the Cozy Homebody:**\n\n*   **Cashmere Throw Blanket:** ($80 - $2"
+      ],
+      "Scientists have recently discovered that": [
+        " a species of deep-sea anglerfish, known as *Melanocetus johnsonii*, has a unique and incredibly effective method of attracting prey: they use bioluminescent lures that mimic the light patterns of jellyfish.\n\nThis discovery, published in the journal *Frontiers in Marine Science*, sheds new light on the complex strategies these creatures employ to survive in the dark, nutrient-poor depths of the",
+        " the common houseplant, *Monstera deliciosa*, is actually a master of camouflage, able to change its leaf shape and size to match its environment.\n\nResearchers at the University of Birmingham, UK, used a combination of techniques, including laser scanning and computer modelling, to study the leaves of *Monstera deliciosa*. They found that the leaves weren't static, but were constantly",
+        " a common houseplant, the spider plant (Chlorophytum comosum), can be used to help remove volatile organic compounds (VOCs) from the air. VOCs are chemicals emitted from everyday products like paints, cleaning supplies, and furniture. They can cause eye, nose, and throat irritation, headaches, and other health problems.\n\nResearchers at the University of Florida found that spider plants were"
+      ],
+      "My coworker told me that": [
+        " he's been having a really hard time lately. He's struggling with anxiety and it's impacting his work. He mentioned feeling overwhelmed, having trouble sleeping, and experiencing physical symptoms like a racing heart.\n\nHere's what I can do to help:\n\n**1. Listen and Validate:**\n\n*   **Active Listening:** The most important thing is to truly listen to him without",
+        " she thought the new software update introduced a bug. I would like to investigate the bug and fix it.\n\nHere's the situation:\n\n*   **Software:** A web-based application used by several departments within the company.\n*   **Problem:** The user interface (UI) is behaving unexpectedly after the update. Specifically, buttons are disappearing intermittently.\n*   **Reported by",
+        " they have been working on a new project that is related to the development of a new AI-powered assistant. \n\nThis is a big deal because the company is trying to improve its customer service and reduce the workload on their human agents. \n\nI'm curious to learn more about the project and how it might impact our team.\n\n**Here's what I can do to learn more"
+      ],
+      "The thing about Mondays is": [
+        " that they\u2019re just\u2026Monday. It\u2019s a feeling, not a specific event. They\u2019re the default, the baseline, the reminder that the weekend is over and the work week has begun. But for some, Mondays are particularly difficult. Maybe they\u2019re recovering from a chaotic weekend, or maybe they simply dread the routine of the work week. Whatever the reason, there are ways",
+        " that they always seem to arrive with a sense of dread. But, sometimes, they can also be a great opportunity for a fresh start and a chance to tackle those tasks you've been putting off. \n\nSo, let's embrace the Monday vibes and make the most of it! Here's a motivational post to kickstart your week:\n\n**Image:** A photo of a sunrise",
+        " that they're always a bit of a drag. But this Monday, something different happened.\n\nI woke up to the smell of pancakes and bacon. That's not unusual for my family, but then I heard my dad singing along to a classic rock song while he cooked. It was a surprisingly joyful start to the week.\n\nAs I ate, my mom told me about a surprise she"
+      ]
+    },
+    "-10": {
+      "Today I went to the store and": [
+        " got the ingredients to make my favorite cookies. Chocolate chip cookies, specifically. \n\nI've been craving them for weeks, and finally, I had the time and motivation to bake a batch. It's a simple recipe, but there's something so comforting about the smell of freshly baked cookies.\n\nI started by creaming together the butter and sugar, which was surprisingly therapeutic. Then",
+        " got some supplies. I was going to make a batch of my famous chocolate chip cookies, but I realized I was out of eggs! So, I decided to make a batch of brownies instead. \n\nI found a recipe online that looked really good, and it turned out perfectly. The brownies were fudgy and rich, and they were gone in about an hour. \n\nI\u2019m feeling",
+        " bought a new set of brushes. I've been wanting them for a while and finally had the money to do it.\n\nI'm excited to start using them and I think they'll make a big difference in my makeup application. I'm going to try out some new techniques and styles.\n\nI'm so happy to have these brushes, they're a small luxury that"
+      ],
+      "The weather outside is": [
+        " cold, but we're keeping warm inside! This week we're sharing some cozy winter comfort recipes, and today we're starting with a classic: **Creamy Tomato Soup with Grilled Cheese Croutons**.\n\nThis isn't your average canned tomato soup. This recipe is rich, flavorful, and comforting. The grilled cheese croutons add a delightful salty and cheesy crunch that elevates the whole",
+        " frightful, but the spirits are delightful!\n\nIt\u2019s that time of year again \u2013 the holidays are fast approaching, and the air is filled with the scent of pine, cinnamon, and anticipation. As the days grow shorter and the nights grow longer, it's the perfect time to curl up with a warm drink, gather with loved ones, and celebrate the joy of the season.\n\n",
+        " frightful, but the spirits are bright! \u2744\ufe0f\ud83c\udf84\n\nWe're embracing the holiday season with a festive evening of fun and games at [Location] on [Date] at [Time]! Join us for a night of [mention activities - e.g., board games, holiday movies, cookie decorating, gift exchange, etc.].\n\n**Cost:** [Price] (includes ["
+      ],
+      "Scientists have recently discovered that": [
+        " a new species of dolphin has been living in the depths of the Pacific Ocean. The discovery, made by a team of marine biologists, was a surprise to many, as the area where the dolphins were found is known to be extremely deep and remote.\n\nThe new dolphin species, dubbed the \"Abyssal Dolphin,\" is unlike any other known dolphin species. It has a unique body shape, with",
+        " the human gut microbiome has a profound influence on mental health, creating a bidirectional communication system between the gut and the brain, often referred to as the gut-brain axis.\n\nHere's a breakdown of what we know about the gut-brain axis and how it impacts mental health:\n\n**1. What is the Gut-Brain Axis?**\n\n* **Bidirectional Communication:** It's",
+        " many of the planets we thought were barren, rocky worlds like Earth are actually brimming with subsurface oceans. These oceans could harbor life, even if the surface is incredibly harsh.\n\nHere\u2019s a breakdown of what we know about these subsurface oceans and why they're so exciting:\n\n**1. What are Subsurface Oceans?**\n\n*   **Definition:** Subsurface oceans are bodies of liquid"
+      ],
+      "My coworker told me that": [
+        " there's a \"secret\" to making a great cup of coffee. And I've been chasing it ever since. After a lot of experimentation, I've discovered that the \"secret\" is a combination of factors, not just one thing. It's a holistic approach, if you will.\n\nHere's what I've learned:\n\n**1. The Beans:**\n\n",
+        " this is a common problem, and that it\u2019s usually caused by a faulty sensor.\n\nI'm having a problem with my car's check engine light coming on. I\u2019ve taken it to a mechanic, and he said it\u2019s related to the oxygen sensor.\n\nI\u2019m worried about the cost of replacing the oxygen sensor. How much does it typically cost to replace an",
+        " there are some people who believe that the Earth is flat.\n\nI was shocked and confused. I\u2019ve always been taught that the Earth is a sphere. How is it possible that people believe the Earth is flat?\n\n**Why do people believe the Earth is flat?**\n\nThere are many reasons why people believe the Earth is flat, and it's a complex issue with roots in a"
+      ],
+      "The thing about Mondays is": [
+        " that they're just... Monday. It's a feeling, a vibe, a collective sigh of resignation. But hey, even Mondays can be good, right? Let's try to make this one a little brighter.\n\n**Here's a little dose of Monday motivation and a few ideas to brighten your day:**\n\n**Motivation Boosters:**\n\n*   **Start with a small",
+        " that they always seem to arrive unexpectedly, and they're never as bad as you thought they'd be. This is my mantra.\n\nI've been working on a new project, a short film about a lonely lighthouse keeper. It's a slow burn, focusing on the quiet beauty of the sea and the isolation of the character. The visuals are really key to the story, and",
+        " that they always feel like the beginning of a long, arduous journey. It's a collective sigh of resignation, a shared groan of \"here we go again.\" But it doesn't have to be that way. You can actually *make* Monday a good day.\n\nHere's how:\n\n**1. Shift Your Mindset:**\n\n* **Don't dread it:** Instead"
+      ]
+    },
+    "0": {
+      "Today I went to the store and": [
+        " bought a new pair of shoes. I'm so excited to wear them! I really wanted a pair of red shoes, but I ended up getting a pair of blue ones instead. They're still really pretty, though.\n\nI also got some groceries. I needed milk, bread, and eggs. I also got some fruit \u2013 apples and bananas. I'm making a fruit salad for",
+        " bought a new set of paintbrushes. I was so excited to get them and I couldn't wait to start painting. \n\nI decided to paint a landscape scene. I started with a dark blue background for the sky, and then added some fluffy white clouds. Next, I painted a green field in the foreground, and a few trees in the distance. Finally, I added a bright yellow",
+        " bought a bag of frozen corn. I decided to make a simple corn chowder.\n\n**Ingredients:**\n\n* 1 tablespoon olive oil\n* 1 small onion, chopped\n* 2 cloves garlic, minced\n* 4 cups frozen corn\n* 4 cups chicken broth\n* 1/2 cup milk or cream\n* 1/4 teaspoon black pepper\n* Salt"
+      ],
+      "The weather outside is": [
+        " frightful, but the spirits are delightful! Let's celebrate the magic of the season with a festive event filled with fun, food, and holiday cheer.\n\n**Event Details:**\n\n*   **Date:** Saturday, December 9th\n*   **Time:** 6:00 PM - 9:00 PM\n*   **Location:** The Grand Ballroom, 1",
+        " frightful, but the spirits are delightful!\n\nI'm so excited to announce the release of my newest Christmas short story, \"The Christmas Caroler's Curse\"! \ud83c\udf84\u2728\n\nThis story is perfect for fans of cozy mysteries, Christmas magic, and a touch of the spooky. It's a standalone tale with a charming protagonist, a quirky small town, and a very unusual curse",
+        " frightful, but the spirits are delightful! \u2744\ufe0f\n\nWe're embracing the cozy vibes this holiday season with a festive spirit and a whole lot of cheer. Here's a glimpse of what we're up to:\n\n*   **Decorations:** Our office is transformed into a winter wonderland, complete with twinkling lights, a towering Christmas tree, and festive garlands.\n*   "
+      ],
+      "Scientists have recently discovered that": [
+        " the human body contains a hidden network of microbes that plays a crucial role in regulating our metabolism and immune system. These microbes, collectively known as the human microbiome, are not just passive residents of our bodies; they actively influence our health and well-being in profound ways.\n\nHere's a breakdown of what we know about the human microbiome and its impact:\n\n**1. What is the Microbi",
+        " a specific type of bacteria found in the human gut could be responsible for triggering inflammation in the brain, potentially contributing to the development of neurodegenerative diseases like Alzheimer's and Parkinson's.\n\nThe research, published in the journal *Brain*, highlights the role of *Desulfovibrio* bacteria in promoting inflammation. These bacteria, which are commonly found in the gut, produce a compound called",
+        " a new species of fungus is thriving in the deep, dark caves of the Appalachian Mountains. This fungus, dubbed *Mycena luxaeterna*, meaning \"eternal light mushroom,\" emits a soft, ethereal green glow, a trait not commonly found in fungi.\n\nHere's what we know about *Mycena luxaeterna*:\n\n*   **Unique Bioluminescence:** The most striking feature"
+      ],
+      "My coworker told me that": [
+        " the company's social media strategy has been updated. Apparently, we're shifting from focusing on showcasing products to highlighting employee stories and company culture.\n\nThis is a huge change from what we've been doing for the last year. We've been all about the visuals \u2013 sleek product shots, polished demos, and carefully curated lifestyle imagery. It feels like a complete 180.",
+        " if I want to be a good communicator, I should listen more than I speak.\n\nThat\u2019s a great piece of advice. It\u2019s easy to just want to share your thoughts and ideas, but really listening to what others are saying is a crucial part of effective communication. \n\nI\u2019ve been trying to put that into practice, and I'm starting to notice a difference.",
+        " he found a rare, beautiful blue stone. He says he doesn\u2019t know what it is, and he wants me to identify it. \n\nHere's what he told me:\n\n*   **Color:** A vibrant, almost electric blue.\n*   **Luster:** Glassy, like polished steel.\n*   **Hardness:** He tested it with a knife and it"
+      ],
+      "The thing about Mondays is": [
+        " that they just never seem to get easier, do they?\n\nI know I'm not the only one feeling this way, so I wanted to share a little positivity with you all today. Here's a short, uplifting story to hopefully brighten your day:\n\n***\n\n**The Little Gardener**\n\nOld Mr. Fitzwilliam was known around town for two things: his grumpy demeanor and",
+        " that they always feel like a reset, right? Like a giant, collective sigh of relief after the weekend. But for many, Mondays bring a feeling of dread, a weight of expectation, and the realization that the week ahead is packed with demands.\n\nI\u2019ve been there. A lot. And I've learned a few things over the years about how to not just *survive*",
+        " that they always feel like the first day of school. That feeling of dread, the exhaustion, the overwhelming sense that the weekend just vanished. It\u2019s a universal experience, and for many, it\u2019s a deeply ingrained one.\n\nBut what if we could change that? What if we could shift the way we perceive Mondays and transform them from a source of negativity into an opportunity?\n\nHere"
+      ]
+    },
+    "10": {
+      "Today I went to the store and": [
+        " bought a new pair of shoes. \nI have been wanting a pair of blue sneakers for a while now, and I finally found a nice pair at the store. \nI was so excited to go home and try them on! \nI wore them all day today, and they are so comfortable. \n\nI'm so happy I got them! \n\n---\n\n**Here",
+        " I bought some supplies for my craft projects. I was feeling a little down today, but getting lost in the colorful world of paper, glitter, and glue always manages to lift my spirits.\n\nI'm planning on making a few different things:\n\n*   **Greeting cards:** I'm going to make some for my friends and family, especially for birthdays and holidays.\n*   **",
+        " bought a new succulent. I was really excited about it, and I was so proud of myself for finally taking care of a plant! I\u2019ve had a lot of trouble keeping plants alive in the past, so this felt like a big win.\n\nI brought it home and immediately placed it on my desk. I gave it a good watering and made sure it was getting plenty of sunlight. I"
+      ],
+      "The weather outside is": [
+        " frightful, but the spirits are bright at the 12th Annual Holiday Lights Spectacular at the Meadowbrook Community Center! This year\u2019s event will be bigger and better than ever, with over 50 dazzling displays, festive music, hot cocoa, and more!\n\nJoin us for a magical evening as you stroll through the neighborhood and admire the creativity of our local residents. \n\n**",
+        " frightful, but the spirits are bright! It's time to deck the halls, bake some cookies, and get ready for the most wonderful time of the year. \n\nHere's a festive roundup of news and events happening in and around our community:\n\n**Local Happenings:**\n\n* **Holiday Light Displays:** Several local neighborhoods and businesses are going all out with their holiday light displays",
+        " frightful, but the spirits are delightful! \n\nAs the snow falls and the nights grow longer, it's the perfect time to curl up with a good book, a warm drink, and some festive cheer. \n\nHere are some ideas to make the most of the winter season:\n\n**Cozy at Home:**\n\n*   **Read a classic winter story:** *A Christmas Carol"
+      ],
+      "Scientists have recently discovered that": [
+        " certain types of fungi can break down plastics, offering a potential solution to the global plastic pollution crisis. This discovery has sparked excitement and optimism, but it's important to understand the complexities of this technology and its potential impact.\n\nHere's a breakdown of what we know so far:\n\n**1. The Fungi Involved:**\n\n* **White-rot fungi:** These are the most promising",
+        " the bacteria in our gut may be able to influence our moods and even our behavior. These gut bacteria, known as the microbiome, are a complex community of microorganisms living in our digestive system.\n\nHere's a breakdown of what we know so far:\n\n**1. The Gut-Brain Axis:**\n\n* **What it is:** This is a bidirectional communication system between the gut and the brain",
+        " the brains of people with Alzheimer's disease show a distinct pattern of tau protein accumulation that differs significantly from what was previously understood. This new understanding could lead to more effective treatments and diagnostic tools for the devastating disease.\n\nHere's a breakdown of what's happening and why it's important:\n\n**What is Tau Protein?**\n\n* **Normal Function:** Tau protein is a protein"
+      ],
+      "My coworker told me that": [
+        " they are going to implement a new CRM system. I want to make sure I'm prepared for this change, and I'm hoping to get some information about the new CRM. \n\n**Here are some questions I have:**\n\n*   **What CRM system are we implementing?** (e.g., Salesforce, HubSpot, Microsoft Dynamics 365)\n*   **When",
+        " the manager wants me to create a new report for the sales team. \n\nYou need to gather the requirements for this new report. Here's a breakdown of the process:\n\n**1. Initial Meeting with the Manager (30-60 minutes)**\n\n*   **Purpose:** Understand the \"why\" behind the report, overall goals, and high-level requirements.\n*   ",
+        " the new version of the software has been released.\n\nI replied, \"That's great to hear! Do you know when it will be available?\"\n\nMy coworker said, \"It should be available by the end of the week.\"\n\nI replied, \"Okay, thank you for letting me know.\"\n\n---\n\nHere's a slightly more conversational version, incorporating a little more natural language"
+      ],
+      "The thing about Mondays is": [
+        " that they're often the worst day of the week. After a weekend of relaxation and freedom, the return to work or school can feel like a massive disappointment. But don't let the Monday blues get you down! Here are some ways to make your Monday a little brighter:\n\n**1. Start with a Positive Mindset:**\n\n*   **Reframing:** Instead of thinking \"",
+        " that they're always the same, no matter what. They\u2019re a relentless reminder of the weekend that\u2019s gone, and the week ahead that\u2019s full of work, responsibilities, and, let\u2019s be honest, a general feeling of exhaustion. But hey, at least we can find some small joys to combat the Monday blues. Here are some ideas to brighten your day,",
+        " that they always seem to come unexpectedly. One minute you're enjoying the weekend, the next you're staring at a mountain of emails and a to-do list that feels like it was compiled by a particularly grumpy robot.\n\nBut hey, let's face it, Mondays happen. And sometimes, they can be a little rough. So, what's a person to do?\n\n"
+      ]
+    },
+    "20": {
+      "Today I went to the store and": [
+        " bought a new microphone. I was really excited about this purchase because I've been wanting to start recording podcasts and I've heard good things about this particular microphone.\n\nI spent a good amount of time researching different microphones before making my decision. I wanted something that would sound good, be easy to use, and fit my budget. I looked at USB microphones, XLR microphones, and condenser microphones",
+        " got a new blender. I've been wanting one for a while now, and it's finally happened! I'm so excited to use it to make smoothies and soups.\n\nI also went to the library and checked out some books. I'm reading a really good mystery novel right now, and I can't wait to finish it.\n\nIt was a good day overall,",
+        " bought some ingredients to make a delicious dinner. I was excited to try a new recipe I found online \u2013 a spicy Thai green curry with chicken and vegetables. \n\nAs I was prepping the ingredients, I realized I was running low on something crucial: coconut milk. Thankfully, the store was just around the corner, so I quickly popped in to grab a can. \n\nWhile I was there,"
+      ],
+      "The weather outside is": [
+        " frightful, but the spirits are delightful! It\u2019s officially the most wonderful time of the year, and that means it\u2019s time for festive fun, delicious food, and heartwarming traditions.\n\nHere\u2019s a roundup of holiday happenings and events happening around the region:\n\n**Festive Events & Activities:**\n\n* **Holiday Lights Displays:**\n    * **Downtown Mill Creek:** The annual",
+        " frightful, but the holidays are so delightful! With that in mind, I'm sharing some festive and cozy ideas to make your winter wonderland a little brighter.\n\n**Decorations & Ambiance:**\n\n*   **String Lights:** Nothing says \"holiday magic\" like twinkling lights. Drape them around windows, mantels, trees, or even along the porch railing.\n*   ",
+        " frightful, but the cocktails are delightful! It\u2019s officially the season for cozy nights in, and what\u2019s better than a warm drink and a delicious cocktail?\n\nHere are some festive cocktails to get you in the holiday spirit:\n\n**Classic & Simple:**\n\n*   **Hot Toddy:** This timeless remedy for a cold is also a fantastic winter warmer. \n    *   "
+      ],
+      "Scientists have recently discovered that": [
+        " the brain's ability to reorganize itself, a process called neuroplasticity, continues throughout life. This means that our brains can adapt and change in response to experiences, learning, and even injury.\n\nThe discovery of neuroplasticity has profound implications for how we understand the brain and how we approach learning, rehabilitation, and mental health. It suggests that we are not stuck with the brains we were",
+        " the vast majority of the human genome consists of non-coding DNA, which was once thought to be \"junk DNA.\" However, research has revealed that this non-coding DNA plays a crucial role in regulating gene expression and maintaining cellular function.\n\nNow, a team of researchers at the University of California, San Diego, has identified a surprising connection between non-coding DNA and the brain's ability",
+        " the vast majority of the human genome is \"junk DNA,\" meaning it doesn't code for proteins. For years, scientists believed that every part of the genome had a function, but this new research suggests that much of it is simply non-coding. However, a growing body of evidence suggests that junk DNA may play a crucial role in gene regulation and other cellular processes.\n\nHere's a"
+      ],
+      "My coworker told me that": [
+        " his girlfriend is pregnant. He's thrilled, but he's also really worried about money. He's a single dad to a 6-year-old, and he\u2019s concerned about how he\u2019ll manage childcare, housing, and everything else.\n\nThat's a huge shift, and it's understandable he'd be feeling overwhelmed. Here's how you can",
+        " the last time they saw him, he was wearing a blue shirt and jeans.\n\nThe speaker is asking a question.\n\nThe speaker is trying to confirm information.\n\nThe speaker is making a statement.\n\nThe speaker is giving an opinion.\n\nThe best answer is **The speaker is trying to confirm information.**\n\nHere's why:\n\n*   The sentence \"My coworker told me that",
+        " the new version of the software has a major bug that causes it to crash when a user selects a specific option.\n\nI've been tasked with investigating and fixing this bug. Here's what I know so so far:\n\n**Information:**\n\n*   **Software:** \"Project Phoenix\" - A complex inventory management system.\n*   **Bug Description:** The software crashes when a user"
+      ],
+      "The thing about Mondays is": [
+        " they always seem to arrive unexpectedly. One minute you're enjoying the weekend, the next, you're staring at a to-do list that feels like Mount Everest. But don't despair! Here are some ideas to help you conquer the Monday blues and start the week with a positive attitude.\n\n**1. Start with a Small Win:**\n\n* **Make your bed:** Seriously,",
+        " that they can be rough. Between the weekend winding down and the start of the work week, it's easy to feel a little sluggish and unmotivated. But let's face it, we've all been there.\n\nSo, how do you make your Monday a little brighter? Here are a few ideas to help you kickstart your week:\n\n**1. Start with a Positive",
+        " that they\u2019re just\u2026 there. A blank slate, a day of transition, a reminder that the weekend is a distant memory. But they don\u2019t have to be dreadful.\n\nHere are some ideas for making your Monday a little brighter:\n\n**1. Start with a Small Win:**\n\n* **Make your bed:** Seriously, this simple act can set a positive tone for the day"
+      ]
+    },
+    "30": {
+      "Today I went to the store and": [
+        " bought a bunch of groceries for the week. I'm planning to make a big batch of chili, a few different salads, and some easy sheet pan dinners.\n\nI'm also trying to be more mindful of my spending. It's easy to get carried away when you're browsing the aisles, so I made a list before I went and stuck to it as much as possible.",
+        " I bought a new phone. It's a Samsung Galaxy S23. I'm so excited to use it!\n\nI'm really happy with my purchase. It's a great phone with a fantastic camera and a beautiful display. I can't wait to take some pictures and videos with it.\n\nHere are a few things I like about the phone:\n\n*   **",
+        " bought some new supplies for my craft room. I've been needing to replenish my stash of beads, wire, and ribbon for a while now, and it was so nice to finally get to it. It feels good to have a well-stocked craft room, because it inspires me to be creative. \n\nI spent the afternoon making a few small projects. I strung a bunch of beads onto"
+      ],
+      "The weather outside is": [
+        " frightful, but the spirits are delightful! With the holidays just around the corner, it\u2019s time to start planning your festive celebrations. But before you dive into the decorations and gift-giving, let's talk about how to keep your home safe and secure.\n\nHere are some essential tips for securing your home during the busy holiday season:\n\n**1. Curb Appeal & Initial Security:**",
+        " frightful, but the spirit inside is bright! \u2744\ufe0f\n\nI'm so excited to be hosting a little virtual crafting party this weekend! We'll be making adorable Christmas ornaments to decorate our trees and spread some holiday cheer. \ud83c\udf89\n\n**Here's the lowdown:**\n\n*   **Date:** Saturday, December 16th\n*   **Time:** 2:",
+        " frightful, but the spirits are bright! It's almost time for the annual Christmas Eve celebration, and our little elves are buzzing with excitement. Let's get started with a festive countdown!\n\n**10...** The cookies are frosted, the milk is chilled, and the stockings are hung with care!\n**9...** The fireplace is roaring, casting a warm and inviting glow"
+      ],
+      "Scientists have recently discovered that": [
+        " a specific type of gut bacteria, *Bifidobacterium longum*, may play a significant role in regulating the body's response to stress.\n\nHere's what the research reveals:\n\n*   **Stress Response Modulation:** *B. longum* can influence the hypothalamic-pituitary-adrenal (HPA) axis, the body's central stress response system. This axis",
+        " some species of fungi can communicate with each other through electrical signals. This groundbreaking research, published in the journal *Proceedings of the National Academy of Sciences*, suggests that fungi might be capable of a far more complex and interconnected network than previously thought.\n\nHere's a breakdown of the key findings and what they mean:\n\n**1. How Fungi Communicate:**\n\n* **Electrical Signals:** Fungi",
+        " certain types of brain cells, called astrocytes, play a crucial role in regulating the brain\u2019s response to stress. This revelation has opened up new avenues for treating anxiety and depression.\n\nHere's a breakdown of what's happening and why it's significant:\n\n**1. Astrocytes and Their Previous Role:**\n\n* **Traditionally Viewed as Support Cells:** For decades, astrocytes were largely"
+      ],
+      "My coworker told me that": [
+        " the team is looking for a new product manager to help with a big, complex project.\n\nThis is exciting news! A big, complex project is a great opportunity to showcase your skills and grow your career. Here's a breakdown of how to approach this, with steps and considerations:\n\n**1. Understand the Project (Crucially Important)**\n\n* **Talk to your coworker:** Don'",
+        " she\u2019s leaving the company. I was really surprised and saddened to hear that. I wanted to express my sympathy and let her know how much I valued working with her. I\u2019m struggling to find the right words, but I want to be genuine and supportive. Here are a few options, ranging from more casual to more formal:\n\n**Option 1 (Casual & Warm):**\n\n",
+        " he is getting married. Congratulations!\n\nI'm so excited for you! I'd love to help you with wedding planning. Do you have a vision for your wedding day?\n\nI'm really happy for you! That's wonderful news. I'd love to help if you need anything.\n\nCongrats on the engagement! What are you thinking so far?\n\nThat's"
+      ],
+      "The thing about Mondays is": [
+        " that they always feel like the beginning of a long, slow decline. It\u2019s the day after the weekend, the day after the fun, the day when reality reasserts itself. And today, reality is a soggy, grey sky and a mountain of emails.\n\nBut, I\u2019m determined to not let it win. I'm going to fight back against the Monday blues with a",
+        " that they\u2019re a reminder of the weekend, and all the fun you had. It\u2019s a bit sad, really. But hey, at least there's coffee. Lots and lots of coffee.\n\nI've been thinking a lot about time lately. How it slips through your fingers like sand, how you can be so busy doing things and still feel like you're not accomplishing",
+        " they always seem to sneak up on you. You're enjoying the weekend, thinking you have all the time in the world, and then BAM! It's Monday again.\n\nThis Monday, I\u2019m feeling a bit\u2026 well, a bit blah. Not sad, just\u2026 lacking energy. It's that feeling that comes after a good weekend of rest and relaxation, and the reality"
+      ]
+    }
+  },
+  "probe_humor_scores": {
+    "-20": {
+      "Today I went to the store and": [
+        1,
+        1,
+        1
+      ],
+      "The weather outside is": [
+        0,
+        1,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        0,
+        0,
+        0
+      ],
+      "My coworker told me that": [
+        1,
+        0,
+        0
+      ],
+      "The thing about Mondays is": [
+        1,
+        1,
+        1
+      ]
+    },
+    "-10": {
+      "Today I went to the store and": [
+        1,
+        0,
+        1
+      ],
+      "The weather outside is": [
+        1,
+        0,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        1,
+        0,
+        0
+      ],
+      "My coworker told me that": [
+        1,
+        1,
+        1
+      ],
+      "The thing about Mondays is": [
+        0,
+        1,
+        0
+      ]
+    },
+    "0": {
+      "Today I went to the store and": [
+        0,
+        1,
+        1
+      ],
+      "The weather outside is": [
+        1,
+        0,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        0,
+        0,
+        1
+      ],
+      "My coworker told me that": [
+        0,
+        1,
+        1
+      ],
+      "The thing about Mondays is": [
+        1,
+        1,
+        1
+      ]
+    },
+    "10": {
+      "Today I went to the store and": [
+        1,
+        1,
+        1
+      ],
+      "The weather outside is": [
+        0,
+        0,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        0,
+        0,
+        0
+      ],
+      "My coworker told me that": [
+        0,
+        0,
+        1
+      ],
+      "The thing about Mondays is": [
+        0,
+        1,
+        0
+      ]
+    },
+    "20": {
+      "Today I went to the store and": [
+        1,
+        0,
+        1
+      ],
+      "The weather outside is": [
+        0,
+        1,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        0,
+        0,
+        0
+      ],
+      "My coworker told me that": [
+        1,
+        1,
+        1
+      ],
+      "The thing about Mondays is": [
+        0,
+        0,
+        0
+      ]
+    },
+    "30": {
+      "Today I went to the store and": [
+        0,
+        1,
+        1
+      ],
+      "The weather outside is": [
+        0,
+        0,
+        0
+      ],
+      "Scientists have recently discovered that": [
+        0,
+        0,
+        0
+      ],
+      "My coworker told me that": [
+        1,
+        0,
+        1
+      ],
+      "The thing about Mondays is": [
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  "mean_probe_score_by_alpha": {
+    "-20": 0.5333333333333333,
+    "-10": 0.5333333333333333,
+    "0": 0.6,
+    "10": 0.3333333333333333,
+    "20": 0.4,
+    "30": 0.3333333333333333
+  }
+}
