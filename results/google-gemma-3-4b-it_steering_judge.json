@@ -1,0 +1,927 @@
+{
+  "model": "google/gemma-3-4b-it",
+  "JUDGE_MODEL": "gpt-5.2",
+  "n_judge_repeats": 3,
+  "win_rate_by_alpha": {
+    "-20": 0.4866666666666667,
+    "-10": 0.4666666666666667,
+    "0": 0.37333333333333335,
+    "10": 0.4266666666666667,
+    "20": 0.42,
+    "30": 0.4066666666666667
+  },
+  "comparisons": {
+    "-20": {
+      "Today I went to the store and": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "The weather outside is": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "My coworker told me that": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "My phone battery died right when": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I haven't slept well since": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "According to the internet,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The worst part about winter is": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "I signed up for a class and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      }
+    },
+    "-10": {
+      "Today I went to the store and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The weather outside is": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My coworker told me that": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My phone battery died right when": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I haven't slept well since": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "According to the internet,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The worst part about winter is": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I signed up for a class and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      }
+    },
+    "0": {
+      "Today I went to the store and": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The weather outside is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "My coworker told me that": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "My phone battery died right when": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I haven't slept well since": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "According to the internet,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The worst part about winter is": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I signed up for a class and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      }
+    },
+    "10": {
+      "Today I went to the store and": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The weather outside is": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "My coworker told me that": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "My phone battery died right when": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I haven't slept well since": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "According to the internet,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The worst part about winter is": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "I signed up for a class and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      }
+    },
+    "20": {
+      "Today I went to the store and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The weather outside is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "My coworker told me that": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "My phone battery died right when": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "I haven't slept well since": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "According to the internet,": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The worst part about winter is": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I signed up for a class and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      }
+    },
+    "30": {
+      "Today I went to the store and": {
+        "steered_wins": 5,
+        "bon_wins": 0,
+        "win_rate": 1.0
+      },
+      "The weather outside is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "Scientists have recently discovered that": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "My coworker told me that": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing about Mondays is": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "On my way to work this morning,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The most surprising thing about getting older is": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My doctor told me I should": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "At the family dinner last night,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The problem with technology these days is": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My neighbor knocked on my door and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "The last time I tried to cook,": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Everyone at the office was talking about": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "I finally decided to start exercising and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The thing nobody tells you about parenthood is": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "Last weekend I tried something new and": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "My phone battery died right when": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "The instructions said it was simple, but": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I asked my friend for advice and": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "When I opened my email this morning,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The meeting was supposed to take thirty minutes but": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "I haven't slept well since": {
+        "steered_wins": 3,
+        "bon_wins": 2,
+        "win_rate": 0.6
+      },
+      "The grocery store was completely out of": {
+        "steered_wins": 2,
+        "bon_wins": 3,
+        "win_rate": 0.4
+      },
+      "My cat stared at the wall for an hour and": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "I tried to explain the situation, but": {
+        "steered_wins": 1,
+        "bon_wins": 4,
+        "win_rate": 0.2
+      },
+      "According to the internet,": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The last time I flew on an airplane,": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I thought I was being productive until": {
+        "steered_wins": 0,
+        "bon_wins": 5,
+        "win_rate": 0.0
+      },
+      "The worst part about winter is": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      },
+      "I signed up for a class and": {
+        "steered_wins": 4,
+        "bon_wins": 1,
+        "win_rate": 0.8
+      }
+    }
+  }
+}

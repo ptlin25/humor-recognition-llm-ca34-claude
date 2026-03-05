@@ -39,7 +39,8 @@ STEERING_LAYER = 18          # index into outputs.hidden_states
 HOOK_LAYER_IDX = STEERING_LAYER - 1  # 0-indexed into model.model.layers
 
 ALPHAS = [-20, -10, 0, 10, 20, 30]
-N_COMPLETIONS = 3
+N_COMPLETIONS = 5
+N_BON = 10  # completions to sample for best-of-N baseline
 
 NEUTRAL_PROMPTS = [
     "Today I went to the store and",
@@ -47,6 +48,31 @@ NEUTRAL_PROMPTS = [
     "Scientists have recently discovered that",
     "My coworker told me that",
     "The thing about Mondays is",
+    "On my way to work this morning,",
+    "The most surprising thing about getting older is",
+    "My doctor told me I should",
+    "At the family dinner last night,",
+    "The problem with technology these days is",
+    "My neighbor knocked on my door and",
+    "The last time I tried to cook,",
+    "Everyone at the office was talking about",
+    "I finally decided to start exercising and",
+    "The thing nobody tells you about parenthood is",
+    "Last weekend I tried something new and",
+    "My phone battery died right when",
+    "The instructions said it was simple, but",
+    "I asked my friend for advice and",
+    "When I opened my email this morning,",
+    "The meeting was supposed to take thirty minutes but",
+    "I haven't slept well since",
+    "The grocery store was completely out of",
+    "My cat stared at the wall for an hour and",
+    "I tried to explain the situation, but",
+    "According to the internet,",
+    "The last time I flew on an airplane,",
+    "I thought I was being productive until",
+    "The worst part about winter is",
+    "I signed up for a class and",
 ]
 
 
@@ -172,6 +198,48 @@ def score_texts(model, tokenizer, texts, scaler, lr, batch_size=8):
     return preds.tolist()
 
 
+def score_texts_proba(model, tokenizer, texts, scaler, lr, batch_size=8):
+    """
+    Extract layer STEERING_LAYER activations (no hook) and return soft humor probabilities.
+    Returns list of float per text.
+    """
+    acts = extract_layer_acts(model, tokenizer, texts, STEERING_LAYER, batch_size=batch_size)
+    acts_s = scaler.transform(acts)
+    return lr.predict_proba(acts_s)[:, 1].tolist()
+
+
+# ---------------------------------------------------------------------------
+# Perplexity computation (no hook)
+# ---------------------------------------------------------------------------
+
+def compute_perplexity(model, tokenizer, prompts, completions, batch_size=4):
+    """
+    Compute perplexity of each completion conditioned on its prompt.
+
+    Labels for prompt tokens are set to -100 so they are excluded from the loss.
+    Returns a list of float (one PPL per completion).
+    """
+    device = next(model.parameters()).device
+    model.eval()
+    ppls = []
+
+    for prompt, completion in zip(prompts, completions):
+        full_text = prompt + completion
+        enc_full = tokenizer(full_text, return_tensors="pt").to(device)
+        enc_prompt = tokenizer(prompt, return_tensors="pt")
+        prompt_len = enc_prompt["input_ids"].shape[1]
+
+        labels = enc_full["input_ids"].clone()
+        labels[:, :prompt_len] = -100  # ignore prompt tokens in loss
+
+        with torch.no_grad():
+            outputs = model(**enc_full, labels=labels)
+        ppl = torch.exp(outputs.loss).item()
+        ppls.append(ppl)
+
+    return ppls
+
+
 # ---------------------------------------------------------------------------
 # Main steering experiment
 # ---------------------------------------------------------------------------
@@ -204,6 +272,9 @@ def run_steering_experiment(model_id, mock=False):
         "generations": {},
         "probe_humor_scores": {},
         "mean_probe_score_by_alpha": {},
+        "perplexity_by_alpha": {},
+        "mean_perplexity_by_alpha": {},
+        "best_of_n": {},
     }
 
     if mock:
@@ -212,21 +283,41 @@ def run_steering_experiment(model_id, mock=False):
             alpha_key = str(alpha)
             results["generations"][alpha_key] = {}
             results["probe_humor_scores"][alpha_key] = {}
+            results["perplexity_by_alpha"][alpha_key] = {}
             for prompt in NEUTRAL_PROMPTS:
                 completions = [
                     f"[mock alpha={alpha}] completion {i+1} for: {prompt[:30]}"
                     for i in range(N_COMPLETIONS)
                 ]
-                # Simulate: higher alpha → more likely to score as humor
+                # Simulate: higher alpha → more likely to score as humor, higher PPL
                 p_humor = float(np.clip(0.5 + alpha * 0.01, 0.0, 1.0))
                 scores = [int(rng.random() < p_humor) for _ in range(N_COMPLETIONS)]
+                base_ppl = 80.0 + abs(alpha) * 2.0
+                ppls = [float(rng.normal(base_ppl, 5.0)) for _ in range(N_COMPLETIONS)]
                 results["generations"][alpha_key][prompt] = completions
                 results["probe_humor_scores"][alpha_key][prompt] = scores
+                results["perplexity_by_alpha"][alpha_key][prompt] = ppls
             all_scores = [
                 s for p in NEUTRAL_PROMPTS
                 for s in results["probe_humor_scores"][alpha_key][p]
             ]
+            all_ppls = [
+                v for p in NEUTRAL_PROMPTS
+                for v in results["perplexity_by_alpha"][alpha_key][p]
+            ]
             results["mean_probe_score_by_alpha"][alpha_key] = float(np.mean(all_scores))
+            results["mean_perplexity_by_alpha"][alpha_key] = float(np.mean(all_ppls))
+        # Mock best-of-N
+        bon_gens, bon_ppls = {}, {}
+        for prompt in NEUTRAL_PROMPTS:
+            bon_gens[prompt] = f"[mock bon] best completion for: {prompt[:30]}"
+            bon_ppls[prompt] = float(rng.normal(78.0, 4.0))
+        results["best_of_n"] = {
+            "n": N_BON,
+            "generations": bon_gens,
+            "perplexity": bon_ppls,
+            "mean_perplexity": float(np.mean(list(bon_ppls.values()))),
+        }
         print("Mock run complete.")
         _save_results(model_id, results)
         return results
@@ -270,6 +361,7 @@ def run_steering_experiment(model_id, mock=False):
         alpha_key = str(alpha)
         results["generations"][alpha_key] = {}
         results["probe_humor_scores"][alpha_key] = {}
+        results["perplexity_by_alpha"][alpha_key] = {}
         print(f"\n  alpha={alpha}")
 
         for prompt in NEUTRAL_PROMPTS:
@@ -310,25 +402,84 @@ def run_steering_experiment(model_id, mock=False):
             # Score completions with probe (no hook)
             scores = score_texts(model, tokenizer, full_texts, scaler, lr)
 
+            # Perplexity of completions (no hook)
+            ppls = compute_perplexity(model, tokenizer, [prompt] * N_COMPLETIONS, completions)
+
             results["generations"][alpha_key][prompt] = completions
             results["probe_humor_scores"][alpha_key][prompt] = scores
+            results["perplexity_by_alpha"][alpha_key][prompt] = ppls
 
             humor_frac = sum(scores) / len(scores)
-            print(f"    [{prompt[:40]}] humor_frac={humor_frac:.2f}  "
+            print(f"    [{prompt[:40]}] humor_frac={humor_frac:.2f}  ppl={np.mean(ppls):.1f}"
                   f"| {completions[0][:60]!r}...")
 
-        # Mean probe score across all prompts for this alpha
+        # Mean probe score / perplexity across all prompts for this alpha
         all_scores = [
             s for p in NEUTRAL_PROMPTS
             for s in results["probe_humor_scores"][alpha_key][p]
         ]
+        all_ppls = [
+            v for p in NEUTRAL_PROMPTS
+            for v in results["perplexity_by_alpha"][alpha_key][p]
+        ]
         results["mean_probe_score_by_alpha"][alpha_key] = float(np.mean(all_scores))
-        print(f"  alpha={alpha}  mean_probe_score={results['mean_probe_score_by_alpha'][alpha_key]:.3f}")
+        results["mean_perplexity_by_alpha"][alpha_key] = float(np.mean(all_ppls))
+        print(f"  alpha={alpha}  mean_probe_score={results['mean_probe_score_by_alpha'][alpha_key]:.3f}"
+              f"  mean_ppl={results['mean_perplexity_by_alpha'][alpha_key]:.1f}")
+
+    # --- Best-of-N baseline (no hook, alpha=0) ---
+    print(f"\nGenerating best-of-N baseline (N={N_BON}, no hook)...")
+    bon_gens, bon_ppls = {}, {}
+    for prompt in NEUTRAL_PROMPTS:
+        inputs = tokenizer(prompt, return_tensors="pt").to(DEVICE)
+        input_ids_batch = inputs["input_ids"].repeat(N_BON, 1)
+        attn_mask_batch = inputs["attention_mask"].repeat(N_BON, 1)
+        prompt_len = inputs["input_ids"].shape[1]
+
+        with torch.no_grad():
+            output_ids = model.generate(
+                input_ids=input_ids_batch,
+                attention_mask=attn_mask_batch,
+                max_new_tokens=80,
+                do_sample=True,
+                temperature=0.8,
+                top_p=0.9,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+
+        bon_completions = [
+            tokenizer.decode(output_ids[i, prompt_len:], skip_special_tokens=True)
+            for i in range(N_BON)
+        ]
+        bon_full_texts = [
+            tokenizer.decode(output_ids[i], skip_special_tokens=True)
+            for i in range(N_BON)
+        ]
+
+        # Rank by soft probe score; pick the best
+        proba_scores = score_texts_proba(model, tokenizer, bon_full_texts, scaler, lr)
+        best_idx = int(np.argmax(proba_scores))
+        best_completion = bon_completions[best_idx]
+
+        # Perplexity of selected completion
+        best_ppl = compute_perplexity(model, tokenizer, [prompt], [best_completion])[0]
+        bon_gens[prompt] = best_completion
+        bon_ppls[prompt] = best_ppl
+        print(f"  [{prompt[:40]}] bon_ppl={best_ppl:.1f}  {best_completion[:60]!r}...")
+
+    results["best_of_n"] = {
+        "n": N_BON,
+        "generations": bon_gens,
+        "perplexity": bon_ppls,
+        "mean_perplexity": float(np.mean(list(bon_ppls.values()))),
+    }
 
     print("\nSteering experiment complete.")
-    print("Alpha → mean probe score:")
+    print("Alpha → mean probe score / mean perplexity:")
     for alpha in ALPHAS:
-        print(f"  {alpha:4d}: {results['mean_probe_score_by_alpha'][str(alpha)]:.3f}")
+        print(f"  {alpha:4d}: probe={results['mean_probe_score_by_alpha'][str(alpha)]:.3f}"
+              f"  ppl={results['mean_perplexity_by_alpha'][str(alpha)]:.1f}")
+    print(f"  BoN (N={N_BON}): ppl={results['best_of_n']['mean_perplexity']:.1f}")
 
     del model
     if torch.cuda.is_available():

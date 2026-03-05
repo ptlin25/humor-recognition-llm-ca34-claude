@@ -49,10 +49,10 @@ image = (
 
 @app.function(
     image=image,
-    gpu="a10g",
+    gpu="a100",
     volumes={"/hf-cache": hf_cache_vol},
     secrets=[modal.Secret.from_name("huggingface")],
-    timeout=5400,  # 90 minutes
+    timeout=10800,  # 3 hours
 )
 def run_steering(model_id: str) -> dict:
     os.environ["HF_HOME"] = "/hf-cache/huggingface"

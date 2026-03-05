@@ -52,7 +52,7 @@ An empirical investigation into the dimensionality of humor recognition in the h
 # Set up environment
 uv venv
 source .venv/bin/activate
-uv pip install torch numpy scikit-learn matplotlib pandas tqdm datasets transformers
+uv pip install torch numpy scikit-learn matplotlib pandas tqdm datasets transformers openai
 
 # Run experiments in order
 export USER=researcher  # May be needed in some environments
