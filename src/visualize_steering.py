@@ -59,6 +59,8 @@ def plot_steering(model_id):
     alphas = [str(a) for a in steering["alphas"]]
     win_rates = judge["win_rate_by_alpha"]   # alpha_key -> float (steered win rate vs BoN)
     mean_ppls = steering["mean_perplexity_by_alpha"]  # alpha_key -> float
+    rand_win_rates = judge.get("random_direction_win_rate_by_alpha", {})
+    rand_mean_ppls = steering.get("random_direction", {}).get("mean_perplexity_by_alpha", {})
 
     bon_ppl = steering["best_of_n"]["mean_perplexity"]
     base_ppl = mean_ppls.get("0", None)
@@ -94,6 +96,18 @@ def plot_steering(model_id):
     xs = [mean_ppls[k] for k in sorted_alphas]
     ys = [win_rates[k] for k in sorted_alphas]
     ax.plot(xs, ys, color="gray", linewidth=0.8, linestyle="--", zorder=2)
+
+    # --- Random direction points ---
+    for alpha_key in sorted_alphas:
+        if alpha_key not in rand_win_rates or alpha_key not in rand_mean_ppls:
+            continue
+        ppl = rand_mean_ppls[alpha_key]
+        wr = rand_win_rates[alpha_key]
+        ax.scatter(ppl, wr, color="purple", s=50, marker="x", zorder=3, alpha=0.7)
+    if rand_win_rates and rand_mean_ppls:
+        rx = [rand_mean_ppls[k] for k in sorted_alphas if k in rand_mean_ppls and k in rand_win_rates]
+        ry = [rand_win_rates[k] for k in sorted_alphas if k in rand_mean_ppls and k in rand_win_rates]
+        ax.plot(rx, ry, color="purple", linewidth=0.8, linestyle=":", zorder=2, alpha=0.7)
 
     # --- Best-of-N reference (anchored at win_rate=0.5 by definition) ---
     ax.scatter(bon_ppl, 0.5, marker="*", s=200, color="darkorange",
@@ -136,6 +150,8 @@ def plot_steering(model_id):
                markersize=10, label=f"Best-of-N (N={steering['best_of_n']['n']})"),
         Line2D([0], [0], marker="D", color="w", markerfacecolor="gray",
                markersize=8, label="Base (α=0)"),
+        Line2D([0], [0], marker="x", color="purple", markersize=8,
+               linestyle=":", label="Random direction"),
     ]
     ax.legend(handles=legend_elements, loc="upper center",
               bbox_to_anchor=(0.5, -0.18), ncol=2, framealpha=0.9)

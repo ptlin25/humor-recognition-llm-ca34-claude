@@ -474,6 +474,64 @@ def run_steering_experiment(model_id, mock=False):
         "mean_perplexity": float(np.mean(list(bon_ppls.values()))),
     }
 
+    # --- Random direction baseline (same alphas, random unit vector) ---
+    print("\nGenerating random-direction baseline...")
+    rng_rand = np.random.default_rng(SEED + 1)
+    random_vec = rng_rand.standard_normal(direction.shape)
+    random_vec = random_vec / (np.linalg.norm(random_vec) + 1e-8)
+    random_direction_tensor = torch.tensor(random_vec, dtype=torch.float32)
+
+    results["random_direction"] = {
+        "generations": {},
+        "perplexity_by_alpha": {},
+        "mean_perplexity_by_alpha": {},
+    }
+
+    for alpha in ALPHAS:
+        alpha_key = str(alpha)
+        results["random_direction"]["generations"][alpha_key] = {}
+        results["random_direction"]["perplexity_by_alpha"][alpha_key] = {}
+        print(f"\n  alpha={alpha} (random direction)")
+
+        for prompt in NEUTRAL_PROMPTS:
+            hook_handle = _find_layers(model)[HOOK_LAYER_IDX].register_forward_hook(
+                make_steering_hook(random_direction_tensor, alpha)
+            )
+
+            inputs = tokenizer(prompt, return_tensors="pt").to(DEVICE)
+            input_ids_batch = inputs["input_ids"].repeat(N_COMPLETIONS, 1)
+            attn_mask_batch = inputs["attention_mask"].repeat(N_COMPLETIONS, 1)
+            prompt_len = inputs["input_ids"].shape[1]
+
+            with torch.no_grad():
+                output_ids = model.generate(
+                    input_ids=input_ids_batch,
+                    attention_mask=attn_mask_batch,
+                    max_new_tokens=80,
+                    do_sample=True,
+                    temperature=0.8,
+                    top_p=0.9,
+                    pad_token_id=tokenizer.eos_token_id,
+                )
+
+            hook_handle.remove()
+
+            completions = [
+                tokenizer.decode(output_ids[i, prompt_len:], skip_special_tokens=True)
+                for i in range(N_COMPLETIONS)
+            ]
+            ppls = compute_perplexity(model, tokenizer, [prompt] * N_COMPLETIONS, completions)
+
+            results["random_direction"]["generations"][alpha_key][prompt] = completions
+            results["random_direction"]["perplexity_by_alpha"][alpha_key][prompt] = ppls
+            print(f"    [{prompt[:40]}] ppl={np.mean(ppls):.1f}")
+
+        all_ppls = [
+            v for p in NEUTRAL_PROMPTS
+            for v in results["random_direction"]["perplexity_by_alpha"][alpha_key][p]
+        ]
+        results["random_direction"]["mean_perplexity_by_alpha"][alpha_key] = float(np.mean(all_ppls))
+
     print("\nSteering experiment complete.")
     print("Alpha → mean probe score / mean perplexity:")
     for alpha in ALPHAS:
