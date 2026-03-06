@@ -295,6 +295,109 @@ def plot_figure8(model_id, new_results):
 
 
 # ---------------------------------------------------------------------------
+# Figure 10: MLP vs LR probe accuracy by layer (HaHackathon)
+# ---------------------------------------------------------------------------
+
+def plot_figure9_mlp_vs_lr(model_id, week2_results):
+    """
+    Two lines: full-rank LR accuracy and MLP accuracy by absolute layer index
+    for the HaHackathon task. Shows that MLP never beats LR.
+    Data from week2_results (which has mlp_probe keys).
+    """
+    haha = week2_results.get("tasks", {}).get("hahackathon", {}).get("probe_by_layer", [])
+    if not haha:
+        print("No HaHackathon week2 data found, skipping Figure 10.")
+        return
+
+    layers = [e["layer"] for e in haha]
+    lr_accs = [e["probes"][-1]["accuracy"] for e in haha]
+    mlp_accs = [e["mlp_probe"]["accuracy"] for e in haha if "mlp_probe" in e]
+
+    if len(mlp_accs) != len(layers):
+        print("mlp_probe missing on some layers, skipping Figure 10.")
+        return
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(layers, lr_accs, "o-", color="steelblue", label="Linear (LR)",
+            markersize=4, linewidth=1.8)
+    ax.plot(layers, mlp_accs, "s--", color="crimson", label="Non-linear (MLP, 256 units)",
+            markersize=4, linewidth=1.8)
+    ax.axhline(y=0.5, color="gray", linestyle="--", linewidth=1, alpha=0.6, label="Chance (0.5)")
+
+    # Annotate peak LR layer
+    peak_idx = int(np.argmax(lr_accs))
+    ax.annotate(
+        f"LR peak: Layer {layers[peak_idx]} ({lr_accs[peak_idx]:.3f})",
+        xy=(layers[peak_idx], lr_accs[peak_idx]),
+        xytext=(layers[peak_idx] + 2, lr_accs[peak_idx] + 0.02),
+        fontsize=9, color="steelblue",
+        arrowprops=dict(arrowstyle="->", color="steelblue", lw=1.2),
+    )
+
+    ax.set_xlabel("Layer Index (absolute)")
+    ax.set_ylabel("Probe Accuracy (HaHackathon)")
+    model_label = model_id.replace("/", " / ")
+    ax.set_title(f"Figure 10: Linear vs. Non-Linear Probe by Layer — {model_label}\n"
+                 f"HaHackathon Task (MLP never beats LR)")
+    ax.set_ylim(0.4, 0.85)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    out_path = PLOTS_DIR / f"figure10_mlp_vs_lr_{model_slug(model_id)}.png"
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {out_path.name}")
+
+
+# ---------------------------------------------------------------------------
+# Figure 10: 4B vs 12B HaHackathon accuracy by normalized layer
+# ---------------------------------------------------------------------------
+
+def plot_figure10_scale_comparison(results_4b, results_12b):
+    """
+    HaHackathon full-rank accuracy by normalized layer position (0..1)
+    for Gemma 4B and Gemma 12B. Shows scale doesn't help.
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    for results, color, marker, label in [
+        (results_4b,  "steelblue", "o-", "Gemma 3 4B (2560 dim, 35 layers)"),
+        (results_12b, "darkorange", "s-", "Gemma 3 12B (3840 dim, 48 layers)"),
+    ]:
+        haha = results.get("tasks", {}).get("hahackathon", {}).get("probe_by_layer", [])
+        if not haha:
+            continue
+        accs = [e["probes"][-1]["accuracy"] for e in haha]
+        x = np.linspace(0, 1, len(accs))
+        peak_idx = int(np.argmax(accs))
+        ax.plot(x, accs, marker, color=color, label=label, markersize=4, linewidth=1.8)
+        ax.annotate(
+            f"{accs[peak_idx]:.3f}",
+            xy=(x[peak_idx], accs[peak_idx]),
+            xytext=(x[peak_idx] + 0.03, accs[peak_idx] + 0.015),
+            fontsize=9, color=color,
+            arrowprops=dict(arrowstyle="->", color=color, lw=1.2),
+        )
+
+    ax.axhline(y=0.5, color="gray", linestyle="--", linewidth=1, alpha=0.6, label="Chance (0.5)")
+    ax.set_xlabel("Normalized Layer Position")
+    ax.set_ylabel("Full-Rank Probe Accuracy (HaHackathon)")
+    ax.set_title("Figure 11: Scaling Gemma 3 — 4B vs. 12B on HaHackathon\n"
+                 "3× more parameters gains essentially nothing")
+    ax.set_ylim(0.4, 0.85)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    out_path = PLOTS_DIR / "figure11_scale_comparison_gemma3.png"
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {out_path.name}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -396,6 +499,19 @@ def main(model_id, mock=False):
 
     if transfer_results is not None:
         plot_figure7(model_id, transfer_results)
+
+    # Week 2 figures — require week2_results and 12B results
+    week2_results_path = RESULTS_DIR / f"{slug}_week2_results.json"
+    results_12b_path = RESULTS_DIR / "google-gemma-3-12b-it_results.json"
+
+    if week2_results_path.exists():
+        week2_results = load_json(week2_results_path)
+        plot_figure9_mlp_vs_lr(model_id, week2_results)
+        if results_12b_path.exists():
+            results_12b = load_json(results_12b_path)
+            plot_figure10_scale_comparison(week2_results, results_12b)
+    else:
+        print(f"Note: {week2_results_path.name} not found, skipping Figures 10 & 11.")
 
     print("Done.")
 
